@@ -15,21 +15,22 @@
 
     <!-- Top bar -->
     <div id="top">
-      <div id="moods">
+      <div id="moods" class="control-row">
         <button onclick="setMood('stressed', this)">Stress Relief</button>
         <button onclick="setMood('tired', this)">Sleepy Reset</button>
         <button onclick="setMood('focused', this)">Focus Boost</button>
         <button onclick="setMood('calm', this)">Calm Balance</button>
-        <div id="textures">
-  <button onclick="setTexture('none', this)">No Texture</button>
-  <button onclick="setTexture('rain', this)">Rain Texture</button>
-  <button onclick="setTexture('ocean', this)">Ocean Texture</button>
-  <button onclick="setTexture('wind', this)">Wind Texture</button>
-  <button onclick="setTexture('cafe', this)">Cafe Ambience</button>
-</div>
       </div>
 
-      <div id="modes">
+      <div id="textures" class="control-row">
+        <button onclick="setTexture('none', this)">No Texture</button>
+        <button onclick="setTexture('rain', this)">Rain Texture</button>
+        <button onclick="setTexture('ocean', this)">Ocean Texture</button>
+        <button onclick="setTexture('wind', this)">Wind Texture</button>
+        <button onclick="setTexture('cafe', this)">Cafe Ambience</button>
+      </div>
+
+      <div id="modes" class="control-row">
         <button onclick="playMode('deepFocus', this)">Deep Focus</button>
         <button onclick="playMode('flowState', this)">Flow State</button>
         <button onclick="playMode('energyBoost', this)">Energy Boost</button>

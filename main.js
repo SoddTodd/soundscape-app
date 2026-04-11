@@ -11,6 +11,11 @@ let intensity = 0.5;
 let pulse = 0;
 let currentMood = "calm";
 let isAudioInitialized = false;
+let lastWeatherType = null;
+let lastTimeContext = null;
+let currentParticleBaseCount = 60;
+let manualTextureChoice = null;
+let currentAutoTextureType = null;
 
 async function ensureAudioInitialized() {
   if (isAudioInitialized) return;
@@ -21,6 +26,12 @@ async function ensureAudioInitialized() {
 function setActiveButton(groupSelector, activeBtn) {
   document.querySelectorAll(groupSelector).forEach(btn => btn.classList.remove("active"));
   if (activeBtn) activeBtn.classList.add("active");
+}
+
+function setTextureButtonByType(type) {
+  const buttons = Array.from(document.querySelectorAll("#textures button"));
+  const activeBtn = buttons.find(btn => btn.textContent.toLowerCase().includes(type));
+  setActiveButton("#textures button", activeBtn || null);
 }
 
 window.setMood = (mood, btn) => {
@@ -35,6 +46,7 @@ window.startApp = async () => {
 };
 
 startWeatherUpdates();
+startTimeUpdates();
 
 window.playMode = async (mode, btn) => {
   await ensureAudioInitialized();
@@ -42,13 +54,14 @@ window.playMode = async (mode, btn) => {
   setActiveButton("#modes button", btn);
 
   vibe.applyMood(currentMood);
+  vibe.setIntensity(intensity);
+  applyCurrentTimeContext();
 
   try {
     const weather = await getWeather();
     const type = getWeatherType(weather);
 
-    vibe.applyWeatherContext(type);
-    applyWeatherVisuals(type);
+    applyWeatherChange(type, true);
   } catch {}
 
   // visuals tweak per mode
@@ -61,14 +74,19 @@ window.playRain = async () => {
   await ensureAudioInitialized();
 
   await vibe.play("flowState"); // or deepFocus
+  manualTextureChoice = "rain";
+  currentAutoTextureType = null;
+  setTextureButtonByType("rain");
   vibe.setTexture("rain");
 
   vibe.applyMood(currentMood);
+  vibe.setIntensity(intensity);
+  applyCurrentTimeContext();
 
   try {
     const weather = await getWeather();
     const weatherType = getWeatherType(weather);
-    vibe.applyWeatherContext(weatherType);
+    applyWeatherChange(weatherType, true);
   } catch (e) {
     console.warn("Weather failed, continuing without it");
   }
@@ -88,16 +106,20 @@ window.playSleep = async () => {
   await ensureAudioInitialized();
 
   await vibe.play("deepSleep");
+  manualTextureChoice = "rain";
+  currentAutoTextureType = null;
+  setTextureButtonByType("rain");
   vibe.setTexture("rain"); // optional
 
   vibe.applyMood(currentMood);
+  vibe.setIntensity(intensity);
+  applyCurrentTimeContext();
 
   try {
     const weather = await getWeather();
     const weatherType = getWeatherType(weather);
 
-    vibe.applyWeatherContext(weatherType);
-    applyWeatherVisuals(weatherType); // 👈 keep visuals in sync
+    applyWeatherChange(weatherType, true);
   } catch (e) {
     console.warn("Weather failed, continuing without it");
   }
@@ -116,6 +138,8 @@ window.stopAll = () => {
   clearInterval(timerInterval);
   vibe.stop();
   vibe.clearTextureSelection();
+  manualTextureChoice = null;
+  currentAutoTextureType = null;
 
   document.querySelectorAll("#moods > button, #textures button, #modes button")
     .forEach(btn => btn.classList.remove("active"));
@@ -129,6 +153,7 @@ window.setIntensity = (value) => {
 function animate() {
   const audioLevel = getAudioLevel();
   const sessionTime = getSessionProgress();
+  const viewportScale = getViewportScale();
 
   // 🌙 visuals calm down over time
   const calmFactor = Math.max(0.3, 1 - sessionTime / 1800);
@@ -136,9 +161,10 @@ function animate() {
   pulse += 0.01 * calmFactor + intensity * 0.02;
 
   const scale =
+    viewportScale * (
     1 +
     Math.sin(pulse) * 0.05 * calmFactor +
-    audioLevel * 0.3;
+    audioLevel * 0.3);
 
   const opacity =
     0.5 +
@@ -174,18 +200,36 @@ function getAudioLevel() {
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
 let particles = [];
 
-function createParticles(count = 60) {
-  particles = [];
+function resizeCanvas() {
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(window.innerWidth * ratio);
+  canvas.height = Math.floor(window.innerHeight * ratio);
+  canvas.style.width = `${window.innerWidth}px`;
+  canvas.style.height = `${window.innerHeight}px`;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
 
-  for (let i = 0; i < count; i++) {
+function getViewportScale() {
+  const minSide = Math.min(window.innerWidth, window.innerHeight);
+  return Math.max(0.72, Math.min(1, minSide / 820));
+}
+
+function getResponsiveParticleCount(baseCount) {
+  const areaRatio = (window.innerWidth * window.innerHeight) / (1440 * 900);
+  return Math.max(18, Math.round(baseCount * Math.max(0.45, Math.min(1.2, areaRatio))));
+}
+
+function createParticles(count = 60) {
+  currentParticleBaseCount = count;
+  particles = [];
+  const responsiveCount = getResponsiveParticleCount(count);
+
+  for (let i = 0; i < responsiveCount; i++) {
     particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
       size: Math.random() * 2 + 0.5,
       speedY: Math.random() * 0.3 + 0.1,
       opacity: Math.random() * 0.5
@@ -194,9 +238,15 @@ function createParticles(count = 60) {
 }
 
 createParticles();
+resizeCanvas();
+
+window.addEventListener("resize", () => {
+  resizeCanvas();
+  createParticles(currentParticleBaseCount);
+});
 
 function drawParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
   const audioLevel = getAudioLevel();
   const sessionTime = getSessionProgress();
@@ -206,8 +256,8 @@ function drawParticles() {
     p.y -= (p.speedY + audioLevel * 0.5) * calmFactor;
 
     if (p.y < 0) {
-      p.y = canvas.height;
-      p.x = Math.random() * canvas.width;
+      p.y = window.innerHeight;
+      p.x = Math.random() * window.innerWidth;
     }
 
     ctx.beginPath();
@@ -273,6 +323,11 @@ function applyTimeVisuals(context) {
         "radial-gradient(circle, #FFD580, #FF8C42)";
       break;
 
+    case "afternoon":
+      background.style.background =
+        "radial-gradient(circle at center, #1a2a3a, #000)";
+      break;
+
     case "evening":
       background.style.background =
         "radial-gradient(circle, #2a3a6f, #000)";
@@ -309,13 +364,55 @@ function startWeatherUpdates() {
 
       console.log("Weather update:", type);
 
-      vibe.applyWeatherContext(type);
-      applyWeatherVisuals(type);
+      applyWeatherChange(type);
 
     } catch (e) {
       console.warn("Weather update failed");
     }
   }, 300000); // every 5 minutes
+}
+
+function applyWeatherChange(type, force = false) {
+  if (!force && type === lastWeatherType) return;
+  lastWeatherType = type;
+
+  if (vibe.current) {
+    vibe.applyWeatherContext(type);
+  }
+  applyAdaptiveTexture(force);
+  applyWeatherVisuals(type);
+}
+
+function startTimeUpdates() {
+  applyCurrentTimeContext();
+
+  setInterval(() => {
+    syncTimeContext();
+  }, 60000);
+}
+
+function applyCurrentTimeContext() {
+  lastTimeContext = vibe.getTimeContext();
+  applyTimeVisuals(lastTimeContext);
+  applyAdaptiveTexture(true);
+}
+
+async function syncTimeContext(force = false) {
+  const nextContext = vibe.getTimeContext();
+  if (!force && nextContext === lastTimeContext) return;
+
+  lastTimeContext = nextContext;
+  applyTimeVisuals(nextContext);
+
+  if (!vibe.current || !vibe.currentMode || !isAudioInitialized) return;
+
+  await vibe.play(vibe.currentMode);
+  vibe.applyMood(currentMood);
+  vibe.setIntensity(intensity);
+
+  if (lastWeatherType) {
+    vibe.applyWeatherContext(lastWeatherType);
+  }
 }
 
 function applyMoodVisuals(mood) {
@@ -405,6 +502,13 @@ async function nextPhase() {
 async function onWorkStart() {
   await ensureAudioInitialized();
   await vibe.play("deepFocus"); // or keep last selected mode
+  vibe.applyMood(currentMood);
+  vibe.setIntensity(intensity);
+  applyCurrentTimeContext();
+
+  if (lastWeatherType) {
+    vibe.applyWeatherContext(lastWeatherType);
+  }
 
   createParticles(40);
 
@@ -418,6 +522,13 @@ async function onWorkStart() {
 async function onBreakStart() {
   await ensureAudioInitialized();
   await vibe.play("deepSleep");
+  vibe.applyMood(currentMood);
+  vibe.setIntensity(intensity);
+  applyCurrentTimeContext();
+
+  if (lastWeatherType) {
+    vibe.applyWeatherContext(lastWeatherType);
+  }
 
   createParticles(20);
 
@@ -456,10 +567,40 @@ function setActive(buttons, activeText) {
 }
 
 window.setTexture = (type, btn) => {
-  setActiveButton("#textures button", type === "none" ? null : btn);
+  manualTextureChoice = type;
+  currentAutoTextureType = null;
+  setActiveButton("#textures button", btn);
+
   if (!vibe.current) {
     ensureAudioInitialized().then(() => vibe.playTextureAlone(type));
   } else {
     vibe.setTexture(type);
   }
 };
+
+function getAdaptiveTextureType() {
+  const mode = vibe.currentMode;
+  const weather = lastWeatherType;
+  const time = lastTimeContext;
+
+  if (weather === "storm" || weather === "rain") return "rain";
+  if (time === "night") return mode === "deepSleep" ? "ocean" : "wind";
+  if (time === "evening") return mode === "energyBoost" ? "cafe" : "ocean";
+  if (mode === "energyBoost") return "cafe";
+  if (mode === "flowState") return weather === "clear" ? "ocean" : "cafe";
+  if (mode === "deepSleep") return "ocean";
+  if (mode === "deepFocus") return time === "morning" ? "wind" : "rain";
+  return weather === "clear" ? "wind" : "ocean";
+}
+
+function applyAdaptiveTexture(force = false) {
+  if (manualTextureChoice !== null || !vibe.current) return;
+
+  const nextTexture = getAdaptiveTextureType();
+  if (!nextTexture) return;
+  if (!force && nextTexture === currentAutoTextureType) return;
+
+  currentAutoTextureType = nextTexture;
+  vibe.setTexture(nextTexture);
+  setTextureButtonByType(nextTexture);
+}
