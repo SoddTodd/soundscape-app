@@ -6,6 +6,8 @@ export class VibeEngine {
     this.current = null;
     this.evolutionInterval = null;
     this.textureStopTimeout = null;
+    this.textureLayerFadeTimers = [];
+    this.selectedTextureType = "none";
   }
 
 async play(vibeName) {
@@ -41,18 +43,6 @@ noiseGain.gain.rampTo(1, 3);
 
   let texture;
   let textureGain;
-  if (config.texture) {
-    const t = this.audio.createPlayer(
-  config.texture.url,
-  config.texture.volume
-);
-
-texture = t.player;
-textureGain = t.gain;
-
-textureGain.gain.rampTo(1, 4);
-    
-  }
 
   let drone;
   let droneGain;
@@ -71,6 +61,14 @@ droneGain.gain.rampTo(1, 5);
 
   this.current = { noise, filter, lfo, texture, drone, noiseGain, textureGain, droneGain };
 
+  const preferredTexture =
+    this.selectedTextureType !== "none"
+      ? this.selectedTextureType
+      : config.texture?.type;
+  if (preferredTexture) {
+    this.setTexture(preferredTexture, false);
+  }
+
   // 🌅 fade in new vibe
   this.audio.masterGain.gain.value = 0.0001;
   this.audio.fadeIn(3);
@@ -87,16 +85,31 @@ this.applyTimeContext(timeContext);
     this.textureStopTimeout = null;
   }
 
+  if (this.textureLayerFadeTimers.length) {
+    this.textureLayerFadeTimers.forEach(timer => clearTimeout(timer));
+    this.textureLayerFadeTimers = [];
+  }
+
   const current = this.current;
   const fadeTime = 2;
 
   current.noiseGain?.gain.rampTo(0, fadeTime);
+
+  if (Array.isArray(current.textureGain)) {
+  current.textureGain.forEach(g => g.gain.rampTo(0, fadeTime));
+} else {
   current.textureGain?.gain.rampTo(0, fadeTime);
+}
+
   current.droneGain?.gain.rampTo(0, fadeTime);
 
   setTimeout(() => {
     current.noise?.stop();
-    current.texture?.stop();
+if (Array.isArray(current.texture)) {
+  current.texture.forEach(t => t.stop());
+} else {
+  current.texture?.stop();
+}
     current.drone?.stop();
     current.lfo?.stop();
   }, fadeTime * 1000);
@@ -120,8 +133,17 @@ setIntensity(value) {
 
   // Optional: affect texture
   if (this.current.texture) {
-    this.current.texture.volume.value = -30 + value * 15;
+    const vol = -30 + value * 15;
+    if (Array.isArray(this.current.texture)) {
+      this.current.texture.forEach(t => { t.volume.value = vol; });
+    } else {
+      this.current.texture.volume.value = vol;
+    }
   }
+}
+
+clearTextureSelection() {
+  this.selectedTextureType = "none";
 }
 
 startEvolution(config) {
@@ -324,7 +346,11 @@ async playMinimalBase() {
   this.audio.fadeIn(2);
 }
 
-setTexture(type) {
+setTexture(type, rememberSelection = true) {
+  if (rememberSelection) {
+    this.selectedTextureType = type;
+  }
+
   if (!this.current) return;
 
   if (this.textureStopTimeout) {
@@ -332,24 +358,41 @@ setTexture(type) {
     this.textureStopTimeout = null;
   }
 
+  if (this.textureLayerFadeTimers.length) {
+    this.textureLayerFadeTimers.forEach(timer => clearTimeout(timer));
+    this.textureLayerFadeTimers = [];
+  }
+
   // fade out old texture
   if (this.current.textureGain) {
     const oldTexture = this.current.texture;
     const oldTextureGain = this.current.textureGain;
 
-    oldTextureGain.gain.rampTo(0, 1);
+    if (Array.isArray(oldTextureGain)) {
+      oldTextureGain.forEach(g => g.gain.rampTo(0, 1));
+    } else {
+      oldTextureGain.gain.rampTo(0, 1);
+    }
 
     this.textureStopTimeout = setTimeout(() => {
-      oldTexture?.stop();
+      if (Array.isArray(oldTexture)) {
+        oldTexture.forEach(t => t.stop());
+      } else {
+        oldTexture?.stop();
+      }
       this.textureStopTimeout = null;
     }, 1000);
   }
 
   const textureMap = {
-    rain: { url: "./assets/sounds/rain.mp3", volume: -20 },
-    ocean: { url: "./assets/sounds/ocean.mp3", volume: -18 },
-    wind: { url: "./assets/sounds/wind.mp3", volume: -25 },
-    cafe: { url: "./assets/sounds/cafe.mp3", volume: -22 }
+    rain: [{ url: "./assets/sounds/rain.mp3", volume: -20, offset: 0, gain: 1 }],
+    ocean: [{ url: "./assets/sounds/ocean.mp3", volume: -18, offset: 0, gain: 1 }],
+    wind: [{ url: "./assets/sounds/wind.mp3", volume: -25, offset: 0, gain: 1 }],
+    cafe: [
+      { url: "./assets/sounds/cafe.mp3", volume: -28, offset: 0, gain: 0.7 },
+      { url: "./assets/sounds/cafe.mp3", volume: -26, offset: 3, gain: 0.8 },
+      { url: "./assets/sounds/cafe.mp3", volume: -24, offset: 7, gain: 0.9 },
+    ],
   };
 
   if (type === "none") {
@@ -361,14 +404,29 @@ setTexture(type) {
   const config = textureMap[type];
   if (!config) return;
 
-  const t = this.audio.createPlayer(config.url, config.volume);
+  const layers = [];
+  const gains = [];
 
-  this.current.texture = t.player;
-  this.current.textureGain = t.gain;
+  config.forEach(layer => {
+    const t = this.audio.createPlayer(layer.url, layer.volume);
+    t.gain.gain.value = 0;
 
-  // smooth fade in
-  this.current.textureGain.gain.value = 0;
-  this.current.textureGain.gain.rampTo(1, 2);
+    const timer = setTimeout(() => {
+      t.gain.gain.rampTo(layer.gain ?? 1, 2);
+    }, (layer.offset ?? 0) * 1000);
+    this.textureLayerFadeTimers.push(timer);
+
+    layers.push(t.player);
+    gains.push(t.gain);
+  });
+
+  if (layers.length === 1) {
+    this.current.texture = layers[0];
+    this.current.textureGain = gains[0];
+  } else {
+    this.current.texture = layers;
+    this.current.textureGain = gains;
+  }
 }
 
 }

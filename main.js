@@ -115,6 +115,10 @@ window.playSleep = async () => {
 window.stopAll = () => {
   clearInterval(timerInterval);
   vibe.stop();
+  vibe.clearTextureSelection();
+
+  document.querySelectorAll("#moods > button, #textures button, #modes button")
+    .forEach(btn => btn.classList.remove("active"));
 };
 
 window.setIntensity = (value) => {

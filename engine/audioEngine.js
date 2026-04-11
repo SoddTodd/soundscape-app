@@ -74,10 +74,10 @@ export class AudioEngine {
         next.start();
         next.volume.rampTo(volume, crossfadeTime);
         active = 1 - active;
+        scheduleNext(); // schedule from now, while new player is fresh
         setTimeout(() => {
           try { current.stop(); } catch (_) {}
           current.volume.value = volume;
-          scheduleNext();
         }, crossfadeTime * 1000);
       }, delay);
     };
