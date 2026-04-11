@@ -11,6 +11,12 @@ body, html {
   position: relative;
   width: 100vw;
   height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-rows: auto 1fr auto;
+  column-gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 #background {
@@ -36,14 +42,13 @@ body, html {
 }
 
 #top {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 340px;
+  grid-column: 1;
+  grid-row: 1;
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  align-self: start;
 }
 
 .control-row {
@@ -75,12 +80,16 @@ button.active {
 }
 
 #center {
-  position: absolute;
-  top: 50%;
-  left: calc((100vw - 320px) / 2);
-  transform: translate(-50%, -50%);
+  grid-column: 1;
+  grid-row: 2;
+  position: relative;
   text-align: center;
-  width: min(60vw, 560px);
+  width: 100%;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
 }
 
 #orb {
@@ -96,7 +105,12 @@ button.active {
 }
 
 #timer {
-  margin-top: -180px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin-top: 0;
+  width: max-content;
 }
 
 #phase {
@@ -110,11 +124,10 @@ button.active {
 }
 
 #bottom {
-  position: absolute;
-  left: 20px;
-  right: 340px;
-  bottom: 30px;
+  grid-column: 1;
+  grid-row: 3;
   text-align: center;
+  align-self: end;
 }
 
 #bottom button {
@@ -141,9 +154,9 @@ button.active {
 }
 
 #definitions {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  position: relative;
   width: 300px;
   height: calc(100vh - 40px);
   overflow-y: auto;
@@ -201,6 +214,7 @@ input[type=range] {
   #app {
     min-height: 100svh;
     height: auto;
+    display: block;
     padding:
       calc(env(safe-area-inset-top, 0px) + 16px)
       16px
@@ -242,11 +256,11 @@ input[type=range] {
     margin-top: 20px;
     margin-bottom: 20px;
     min-height: 220px;
+    display: flex;
   }
 
   #timer {
-    position: relative;
-    margin-top: -120px;
+    width: 100%;
   }
 
   #bottom {
@@ -291,7 +305,7 @@ input[type=range] {
   }
 
   #timer {
-    margin-top: -92px;
+    width: 100%;
   }
 
   #phase {

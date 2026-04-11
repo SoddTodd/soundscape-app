@@ -171,7 +171,7 @@ function animate() {
     Math.sin(pulse) * 0.2 * calmFactor +
     audioLevel * 0.5;
 
-  orb.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  orb.style.transform = `scale(${scale})`;
   orb.style.opacity = opacity;
 
   requestAnimationFrame(animate);
