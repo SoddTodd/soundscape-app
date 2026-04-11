@@ -1,0 +1,294 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+  background: black;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* 🌌 Background gradient */
+#background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #1a2a3a, #000);
+  transition: background 3s ease;
+}
+
+/* 🔮 Orb */
+#orb {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+
+  background: radial-gradient(circle, rgba(255,255,255,0.2), transparent);
+  filter: blur(40px);
+
+  transition: transform 2s ease, opacity 2s ease;
+}
+
+/* 🎛️ Controls */
+#controls {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  text-align: center;
+  z-index: 3;
+}
+
+button {
+  margin: 5px;
+  padding: 10px 20px;
+}
+
+#particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#mood {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  text-align: center;
+  z-index: 3;
+}
+
+#mood button {
+  font-size: 20px;
+  margin: 5px;
+  padding: 10px;
+}
+
+#modes {
+  position: absolute;
+  top: 90px;
+  width: 100%;
+  text-align: center;
+  z-index: 3;
+}
+
+#timer {
+  position: absolute;
+  top: 145px;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  z-index: 3;
+}
+
+#time {
+  font-size: 28px;
+  margin-right: 10px;
+}
+
+#definitions {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  width: 300px;
+  height: 100vh;
+  overflow-y: auto;
+  pointer-events: auto;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+.definition-panel {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(10, 20, 35, 0.55);
+  color: #d7e6ff;
+  backdrop-filter: blur(3px);
+}
+
+.definition-panel h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.definition-panel p {
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 980px) {
+  #definitions {
+    position: absolute;
+    left: 50%;
+    right: auto;
+    top: 190px;
+    transform: translateX(-50%);
+    width: min(92vw, 560px);
+    height: auto;
+    overflow-y: visible;
+  }
+}
+
+/* Base */
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+  background: black;
+  color: white;
+}
+
+/* Layout */
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Background */
+#background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #1a2a3a, #000);
+  transition: background 3s ease;
+}
+
+/* Top */
+#top {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  text-align: center;
+}
+
+#top button {
+  margin: 4px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+#top button.active {
+  background: rgba(255,255,255,0.35);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
+}
+
+/* Center */
+#center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+/* Orb */
+#orb {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  margin: 0 auto;
+
+  background: radial-gradient(circle, rgba(255,255,255,0.2), transparent);
+  filter: blur(40px);
+
+  transition: transform 1s ease, opacity 1s ease;
+}
+
+/* Timer */
+#timer {
+  margin-top: -180px;
+}
+
+#phase {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+#time {
+  font-size: 48px;
+  font-weight: 600;
+}
+
+/* Bottom */
+#intensity-control {
+  display: inline-block;
+  margin-left: 20px;
+  vertical-align: middle;
+}
+
+#intensity-control label {
+  margin-right: 8px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+#intensity-slider {
+  vertical-align: middle;
+  width: 150px;
+}
+
+#bottom {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  text-align: center;
+}
+
+#bottom button {
+  margin: 5px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+/* Slider */
+input[type=range] {
+  width: 200px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: rgba(255,255,255,0.25);
+  cursor: pointer;
+}
+
+#textures {
+  margin-top: 10px;
+}
+
+#textures button {
+  font-size: 18px;
+  padding: 8px 10px;
+}

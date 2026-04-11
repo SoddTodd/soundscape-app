@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundscape App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- 🌌 Background -->
+    <div id="background"></div>
+    <canvas id="particles"></canvas>
+
+    <!-- Top bar -->
+    <div id="top">
+      <div id="moods">
+        <button onclick="setMood('stressed', this)">Stress Relief</button>
+        <button onclick="setMood('tired', this)">Sleepy Reset</button>
+        <button onclick="setMood('focused', this)">Focus Boost</button>
+        <button onclick="setMood('calm', this)">Calm Balance</button>
+        <div id="textures">
+  <button onclick="setTexture('none', this)">No Texture</button>
+  <button onclick="setTexture('rain', this)">Rain Texture</button>
+  <button onclick="setTexture('ocean', this)">Ocean Texture</button>
+  <button onclick="setTexture('wind', this)">Wind Texture</button>
+  <button onclick="setTexture('cafe', this)">Cafe Ambience</button>
+</div>
+      </div>
+
+      <div id="modes">
+        <button onclick="playMode('deepFocus', this)">Deep Focus</button>
+        <button onclick="playMode('flowState', this)">Flow State</button>
+        <button onclick="playMode('energyBoost', this)">Energy Boost</button>
+      </div>
+    </div>
+
+    <!-- Center -->
+    <div id="center">
+      <div id="orb"></div>
+      <div id="timer">
+        <div id="phase">Focus • Cycle 1</div>
+        <div id="time">25:00</div>
+      </div>
+    </div>
+
+    <!-- Bottom controls -->
+    <div id="bottom">
+      <button onclick="startFlow()">Start Timer</button>
+      <button onclick="stopAll()">Stop</button>
+      <button onclick="resetFlow()">Reset</button>
+
+      <div id="intensity-control">
+        <label for="intensity-slider">Intensity</label>
+        <input id="intensity-slider" type="range" min="0" max="1" step="0.01"
+          onchange="setIntensity(this.value)">
+      </div>
+    </div>
+
+    <!-- Definition panels -->
+    <div id="definitions">
+      <div class="definition-panel" id="moods-definitions">
+        <h3>Mood Settings</h3>
+        <p><strong>Stress Relief:</strong> Softer, deeper layers to ease tension and calm your mind.</p>
+        <p><strong>Sleepy Reset:</strong> Warmer, gentler textures for low energy moments.</p>
+        <p><strong>Focus Boost:</strong> Cleaner tone with less noise to support concentration.</p>
+        <p><strong>Calm Balance:</strong> Balanced default profile for steady work.</p>
+      </div>
+
+      <div class="definition-panel" id="textures-definitions">
+        <h3>Ambient Textures</h3>
+        <p><strong>No Texture:</strong> Pure mode without ambient layers.</p>
+        <p><strong>Rain Texture:</strong> Natural rain sounds for focused work.</p>
+        <p><strong>Ocean Texture:</strong> Gentle waves for calm environments.</p>
+        <p><strong>Wind Texture:</strong> Soft breeze for meditation and relaxation.</p>
+        <p><strong>Cafe Ambience:</strong> Background chatter for creative flow.</p>
+      </div>
+
+      <div class="definition-panel" id="modes-definitions">
+        <h3>Focus Modes</h3>
+        <p><strong>Deep Focus:</strong> Minimal movement, narrow frequencies for intense concentration.</p>
+        <p><strong>Flow State:</strong> Broader, airy tones with gentle evolution for creative work.</p>
+        <p><strong>Energy Boost:</strong> Brighter, more active profile when your brain needs a lift.</p>
+      </div>
+
+      <div class="definition-panel" id="controls-definitions">
+        <h3>Controls & Slider</h3>
+        <p><strong>Start Timer:</strong> Begin a 25-minute Pomodoro focus cycle with auto-transitions.</p>
+        <p><strong>Stop:</strong> Fade out all active sounds immediately.</p>
+        <p><strong>Reset:</strong> Return timer to default state (25 min focus, Cycle 1).</p>
+        <p><strong>Intensity Slider:</strong> Adjust volume and movement of the soundscape in real-time.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/tone"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
