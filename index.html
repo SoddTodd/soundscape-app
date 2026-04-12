@@ -30,10 +30,16 @@
       </div>
 
       <div id="modes" class="control-row">
-        <button onclick="playMode('deepFocus', this)">Deep Focus</button>
-        <button onclick="playMode('flowState', this)">Flow State</button>
-        <button onclick="playMode('energyBoost', this)">Energy Boost</button>
+        <button class="mode-btn" onclick="playMode('deepFocus', this)">Deep Focus</button>
+        <button class="mode-btn" onclick="playMode('flowState', this)">Flow State</button>
+        <button class="mode-btn" onclick="playMode('energyBoost', this)">Energy Boost</button>
+        <button id="binaural-mode-button" class="mode-btn" onclick="playBinaural(this)">Binaural</button>
       </div>
+      <div id="binaural-options" class="control-row" aria-hidden="true">
+        <button class="binaural-option" onclick="setBinaural('focus', this)">Focus</button>
+        <button class="binaural-option" onclick="setBinaural('relax', this)">Relax</button>
+      </div>
+      <div id="binaural-hint" aria-live="polite"></div>
 
       <div id="tones" class="control-row">
         <label for="solfeggio-select">Solfeggio</label>
@@ -108,6 +114,9 @@
         <p><strong>Deep Focus:</strong> Minimal movement, narrow frequencies for intense concentration.</p>
         <p><strong>Flow State:</strong> Broader, airy tones with gentle evolution for creative work.</p>
         <p><strong>Energy Boost:</strong> Brighter, more active profile when your brain needs a lift.</p>
+        <p><strong>Binaural:</strong> Two close frequencies split left/right for a beat-perception effect.</p>
+        <p><strong>Binaural Focus:</strong> Faster beat for concentration and alertness.</p>
+        <p><strong>Binaural Relax:</strong> Slower beat for calming and unwind sessions.</p>
       </div>
 
       <div class="definition-panel" id="controls-definitions">
@@ -126,6 +135,14 @@
         <p><strong>417 Hz:</strong> Warm, gently moving profile.</p>
         <p><strong>528 Hz:</strong> Balanced center profile.</p>
         <p><strong>639/741/852 Hz:</strong> Progressively clearer and brighter upper-band character.</p>
+      </div>
+
+      <div class="definition-panel" id="info-definitions">
+        <h3>Info</h3>
+        <p><strong>Binaural Listening:</strong> Use stereo headphones for proper left/right beat perception.</p>
+        <p><strong>Layer Balance:</strong> Binaural modes combine tones plus ambience, so lower Intensity if the beat feels strong.</p>
+        <p><strong>Best Pairing:</strong> Focus uses clean cafe ambience, Relax uses soft rain texture.</p>
+        <p><strong>Stop Behavior:</strong> Stop applies a smooth fade out instead of abrupt muting.</p>
       </div>
     </div>
 

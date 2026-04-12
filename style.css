@@ -219,6 +219,37 @@ input[type=range]::-webkit-slider-thumb {
   margin-top: 2px;
 }
 
+#modes {
+  align-items: center;
+}
+
+#binaural-options {
+  display: none;
+  margin-top: -2px;
+}
+
+#binaural-options.visible {
+  display: flex;
+}
+
+#binaural-options button {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+#binaural-hint {
+  display: none;
+  margin-top: -4px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.72);
+}
+
+#binaural-hint.visible {
+  display: block;
+}
+
 #textures button {
   font-size: 16px;
 }

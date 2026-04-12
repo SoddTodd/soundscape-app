@@ -47,59 +47,30 @@ export class AudioEngine {
     Tone.Transport.cancel();
   }
 
-  createPlayer(url, volume = -20, crossfadeTime = 2) {
+  createPlayer(url, volume = -20) {
     const gain = new Tone.Gain(0);
     gain.connect(this.masterGain);
 
-    const p0 = new Tone.Player({ url });
-    const p1 = new Tone.Player({ url });
-    p0.volume.value = volume;
-    p1.volume.value = volume;
-    p0.connect(gain);
-    p1.connect(gain);
+    const player = new Tone.Player({
+      url,
+      loop: true,
+    });
+    player.volume.value = volume;
+    player.connect(gain);
 
-    let active = 0;
-    let scheduleId = null;
-    const pair = [p0, p1];
-
-    const scheduleNext = () => {
-      const current = pair[active];
-      const next = pair[1 - active];
-      const duration = current.buffer.duration;
-      const delay = Math.max(0, (duration - crossfadeTime) * 1000);
-
-      scheduleId = setTimeout(() => {
-        current.volume.rampTo(-60, crossfadeTime);
-        next.volume.value = volume - 60;
-        next.start();
-        next.volume.rampTo(volume, crossfadeTime);
-        active = 1 - active;
-        scheduleNext(); // schedule from now, while new player is fresh
-        setTimeout(() => {
-          try { current.stop(); } catch (_) {}
-          current.volume.value = volume;
-        }, crossfadeTime * 1000);
-      }, delay);
-    };
-
-    p0.load(url).then(() => {
-      p1.load(url).then(() => {
-        p0.start();
-        scheduleNext();
-      });
+    player.load(url).then(() => {
+      player.start();
     });
 
     return {
       player: {
         stop: () => {
-          clearTimeout(scheduleId);
-          try { p0.stop(); } catch (_) {}
-          try { p1.stop(); } catch (_) {}
+          try { player.stop(); } catch (_) {}
         },
         volume: {
-          get value() { return pair[active].volume.value; },
-          set value(v) { pair[active].volume.value = v; },
-          rampTo: (v, t) => { pair[active].volume.rampTo(v, t); },
+          get value() { return player.volume.value; },
+          set value(v) { player.volume.value = v; },
+          rampTo: (v, t) => { player.volume.rampTo(v, t); },
         },
       },
       gain,
@@ -113,6 +84,28 @@ export class AudioEngine {
   fadeOut(time = 2) {
     this.masterGain.gain.rampTo(0, time);
   }
+
+  createBinaural(baseFreq, beatFreq, volume = -25) {
+  const leftOsc = new Tone.Oscillator(baseFreq, "sine").start();
+  const rightOsc = new Tone.Oscillator(baseFreq + beatFreq, "sine").start();
+
+  const leftGain = new Tone.Gain(Tone.dbToGain(volume));
+  const rightGain = new Tone.Gain(Tone.dbToGain(volume));
+
+  const leftPanner = new Tone.Panner(-1); // full left
+  const rightPanner = new Tone.Panner(1); // full right
+
+  leftOsc.connect(leftGain).connect(leftPanner).connect(this.masterGain);
+  rightOsc.connect(rightGain).connect(rightPanner).connect(this.masterGain);
+
+  return {
+    leftOsc,
+    rightOsc,
+    leftGain,
+    rightGain
+  };
+}
+
 }
 
 

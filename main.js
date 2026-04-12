@@ -6,6 +6,9 @@ const vibe = new VibeEngine(audio);
 
 const orb = document.getElementById("orb");
 const background = document.getElementById("background");
+const binauralOptions = document.getElementById("binaural-options");
+const binauralModeButton = document.getElementById("binaural-mode-button");
+const binauralHint = document.getElementById("binaural-hint");
 const solfeggioSelect = document.getElementById("solfeggio-select");
 const solfeggioMix = document.getElementById("solfeggio-mix");
 const solfeggioHint = document.getElementById("solfeggio-hint");
@@ -55,6 +58,75 @@ function updateSolfeggioHint(mode) {
     SOLFEGGIO_HINTS[mode] || "Pick a frequency to see its vibe.";
 }
 
+function showBinauralOptions(show) {
+  if (!binauralOptions) return;
+
+  binauralOptions.classList.toggle("visible", show);
+  binauralOptions.setAttribute("aria-hidden", show ? "false" : "true");
+
+  if (binauralHint) {
+    binauralHint.classList.toggle("visible", show);
+  }
+
+  if (binauralHint && !show) {
+    binauralHint.textContent = "";
+  }
+
+  if (!show) {
+    document
+      .querySelectorAll("#binaural-options .binaural-option")
+      .forEach(btn => btn.classList.remove("active"));
+  }
+}
+
+function setBinauralHintText(type) {
+  if (!binauralHint) return;
+
+  if (type === "focus") {
+    binauralHint.textContent = "Focus beat: 10 Hz. Best with stereo headphones.";
+    return;
+  }
+
+  if (type === "relax") {
+    binauralHint.textContent = "Relax beat: 4 Hz. Best with stereo headphones.";
+    return;
+  }
+
+  binauralHint.textContent = "Best with stereo headphones.";
+}
+
+function getBinauralProfile(type) {
+  if (type === "relax") {
+    return {
+      mode: "binauralRelax",
+      texture: "rain"
+    };
+  }
+
+  return {
+    mode: "binauralFocus",
+    texture: "cafe"
+  };
+}
+
+async function activateBinauralProfile(type, btn) {
+  const profile = getBinauralProfile(type);
+
+  manualTextureChoice = null;
+  currentAutoTextureType = profile.texture;
+
+  showBinauralOptions(true);
+  setBinauralHintText(type);
+  setActiveButton("#modes .mode-btn", binauralModeButton);
+  setActiveButton("#binaural-options .binaural-option", btn || null);
+
+  await window.playMode(profile.mode, binauralModeButton);
+
+  vibe.setTexture(profile.texture, false);
+  setTextureButtonByType(profile.texture);
+  showBinauralOptions(true);
+}
+
 window.setMood = (mood, btn) => {
   currentMood = mood;
   setActiveButton("#moods > button", btn);
@@ -76,7 +148,11 @@ startTimeUpdates();
 window.playMode = async (mode, btn) => {
   await ensureAudioInitialized();
   await vibe.play(mode);
-  setActiveButton("#modes button", btn);
+  setActiveButton("#modes .mode-btn", btn);
+
+  if (!mode.startsWith("binaural")) {
+    showBinauralOptions(false);
+  }
 
   updateSolfeggioHint(solfeggioSelect?.value || "");
 
@@ -95,6 +171,8 @@ window.playMode = async (mode, btn) => {
   if (mode === "deepFocus") createParticles(20);
   if (mode === "flowState") createParticles(60);
   if (mode === "energyBoost") createParticles(90);
+  if (mode === "binauralFocus") createParticles(40);
+  if (mode === "binauralRelax") createParticles(25);
 };
 
 window.setSolfeggio = async (mode) => {
@@ -180,7 +258,18 @@ window.playSleep = async () => {
 
 window.stopAll = () => {
   clearInterval(timerInterval);
-  vibe.stop();
+
+  const doStop = () => {
+    vibe.stop();
+  };
+
+  if (isAudioInitialized) {
+    audio.fadeOut(1.4);
+    setTimeout(doStop, 1400);
+  } else {
+    doStop();
+  }
+
   vibe.clearTextureSelection();
   manualTextureChoice = null;
   currentAutoTextureType = null;
@@ -192,6 +281,8 @@ window.stopAll = () => {
 
   document.querySelectorAll("#moods > button, #textures button, #modes button")
     .forEach(btn => btn.classList.remove("active"));
+
+  showBinauralOptions(false);
 };
 
 window.setIntensity = (value) => {
@@ -610,6 +701,8 @@ function getAdaptiveTextureType() {
   const weather = lastWeatherType;
   const time = lastTimeContext;
 
+  if (mode === "binauralFocus") return "cafe";
+  if (mode === "binauralRelax") return "rain";
   if (weather === "storm" || weather === "rain") return "rain";
   if (time === "night") return mode === "deepSleep" ? "ocean" : "wind";
   if (time === "evening") return mode === "energyBoost" ? "cafe" : "ocean";
@@ -631,3 +724,17 @@ function applyAdaptiveTexture(force = false) {
   vibe.setTexture(nextTexture);
   setTextureButtonByType(nextTexture);
 }
+
+window.setBinaural = async (type, btn) => {
+  if (!binauralModeButton) return;
+
+  await activateBinauralProfile(type, btn);
+};
+
+window.playBinaural = async (btn) => {
+  const defaultOption = document.querySelector(
+    "#binaural-options .binaural-option"
+  );
+
+  await activateBinauralProfile("focus", defaultOption || btn);
+};

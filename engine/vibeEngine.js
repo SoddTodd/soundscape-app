@@ -46,6 +46,7 @@ noiseGain.gain.rampTo(1, 3);
 
   let texture;
   let textureGain;
+  let binaural;
 
   let drone;
   let droneGain;
@@ -62,7 +63,24 @@ noiseGain.gain.rampTo(1, 3);
     droneGain.gain.rampTo(1, 5);
   }
 
-  this.current = { noise, filter, lfo, texture, drone, noiseGain, textureGain, droneGain };
+if (config.binaural) {
+  const b = this.audio.createBinaural(
+    config.binaural.base,
+    config.binaural.beat,
+    config.binaural.volume ?? -35
+  );
+
+  binaural = b;
+
+  // smooth fade in
+  b.leftGain.gain.value = 0;
+  b.rightGain.gain.value = 0;
+
+  b.leftGain.gain.rampTo(1, 3);
+  b.rightGain.gain.rampTo(1, 3);
+}
+
+  this.current = { noise, filter, lfo, texture, drone, noiseGain, textureGain, droneGain, binaural };
 
   const preferredTexture =
     this.selectedTextureType !== "none"
@@ -132,6 +150,17 @@ if (Array.isArray(current.texture)) {
   if (!keepSolfeggio) {
     this.clearSolfeggio();
   }
+
+  if (current.binaural) {
+  current.binaural.leftGain.gain.rampTo(0, fadeTime);
+  current.binaural.rightGain.gain.rampTo(0, fadeTime);
+
+  setTimeout(() => {
+    current.binaural.leftOsc.stop();
+    current.binaural.rightOsc.stop();
+  }, fadeTime * 1000);
+}
+
 }
 
 setSolfeggioTone(vibeName) {
@@ -463,12 +492,8 @@ setTexture(type, rememberSelection = true) {
   const textureMap = {
     rain: [{ url: "./assets/sounds/rain.mp3", volume: -20, offset: 0, gain: 1 }],
     ocean: [{ url: "./assets/sounds/ocean.mp3", volume: -18, offset: 0, gain: 1 }],
-    wind: [{ url: "./assets/sounds/wind.mp3", volume: -25, offset: 0, gain: 1 }],
-    cafe: [
-      { url: "./assets/sounds/cafe.mp3", volume: -28, offset: 0, gain: 0.7 },
-      { url: "./assets/sounds/cafe.mp3", volume: -26, offset: 3, gain: 0.8 },
-      { url: "./assets/sounds/cafe.mp3", volume: -24, offset: 7, gain: 0.9 },
-    ],
+    wind: [{ url: "./assets/sounds/wind.mp3", volume: -22, offset: 0, gain: 1 }],
+    cafe: [{ url: "./assets/sounds/cafe.mp3", volume: -24, offset: 0, gain: 1 }],
   };
 
   if (type === "none") {

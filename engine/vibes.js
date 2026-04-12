@@ -105,6 +105,30 @@ solfeggio852: {
   noise: { type: "white", volume: -48 },
   filterRange: [520, 1800],
   lfoSpeed: 0.065
+},
+
+binauralFocus: {
+  binaural: { base: 200, beat: 10, volume: -42 }, // focus
+  noise: { type: "pink", volume: -40 },
+  texture: {
+    type: "cafe",
+    url: "./assets/sounds/cafe.mp3",
+    volume: -24
+  },
+  filterRange: [200, 800],
+  lfoSpeed: 0.02
+},
+
+binauralRelax: {
+  binaural: { base: 180, beat: 4, volume: -44 }, // calm
+  noise: { type: "pink", volume: -45 },
+  texture: {
+    type: "rain",
+    url: "./assets/sounds/rain.mp3",
+    volume: -20
+  },
+  filterRange: [150, 600],
+  lfoSpeed: 0.01
 }
   
 };
