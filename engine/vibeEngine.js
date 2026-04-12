@@ -4,6 +4,9 @@ export class VibeEngine {
   constructor(audioEngine) {
     this.audio = audioEngine;
     this.current = null;
+    this.solfeggioLayer = null;
+    this.solfeggioMix = 0.55;
+    this.selectedSolfeggioType = "";
     this.evolutionInterval = null;
     this.textureStopTimeout = null;
     this.textureLayerFadeTimers = [];
@@ -21,7 +24,7 @@ async play(vibeName) {
   if (this.current) {
     this.audio.fadeOut(2);
     await new Promise(r => setTimeout(r, 2000));
-    this.stop();
+    this.stop(true);
   }
 
   this.startEvolution(config);
@@ -48,15 +51,15 @@ noiseGain.gain.rampTo(1, 3);
   let droneGain;
   if (config.drone) {
     const d = this.audio.createDrone(
-  config.drone.freq,
-  config.drone.volume
-);
+      config.drone.freq,
+      config.drone.volume
+    );
 
-drone = d.osc;
+    drone = d.osc;
     this.audio.addLFO(d.filter.frequency, 200, 600, 0.03);
     droneGain = d.gain;
 
-droneGain.gain.rampTo(1, 5);
+    droneGain.gain.rampTo(1, 5);
   }
 
   this.current = { noise, filter, lfo, texture, drone, noiseGain, textureGain, droneGain };
@@ -77,8 +80,13 @@ droneGain.gain.rampTo(1, 5);
 this.applyTimeContext(timeContext);
 }
 
-  stop() {
-  if (!this.current) return;
+  stop(keepSolfeggio = false) {
+  if (!this.current) {
+    if (!keepSolfeggio) {
+      this.clearSolfeggio();
+    }
+    return;
+  }
 
   if (this.textureStopTimeout) {
     clearTimeout(this.textureStopTimeout);
@@ -120,6 +128,74 @@ if (Array.isArray(current.texture)) {
     clearInterval(this.evolutionInterval);
     this.evolutionInterval = null;
   }
+
+  if (!keepSolfeggio) {
+    this.clearSolfeggio();
+  }
+}
+
+setSolfeggioTone(vibeName) {
+  if (!vibeName) {
+    this.selectedSolfeggioType = "";
+    this.clearSolfeggio();
+    return;
+  }
+
+  const config = vibes[vibeName];
+  if (!config?.drone) return;
+
+  this.selectedSolfeggioType = vibeName;
+
+  if (this.solfeggioLayer) {
+    this.clearSolfeggio();
+  }
+
+  const d = this.audio.createDrone(config.drone.freq, config.drone.volume - 3);
+  d.filter.frequency.value = Math.max(1200, config.drone.freq * 2.2);
+
+  const lfoMin = Math.max(900, config.drone.freq * 1.5);
+  const lfoMax = Math.max(1600, config.drone.freq * 2.8);
+  const lfo = this.audio.addLFO(d.filter.frequency, lfoMin, lfoMax, 0.012);
+
+  d.gain.gain.value = 0;
+  d.gain.gain.rampTo(this.getSolfeggioGainTarget(), 1.6);
+
+  this.solfeggioLayer = { osc: d.osc, filter: d.filter, gain: d.gain, lfo };
+
+  if (!this.current) {
+    this.audio.masterGain.gain.value = Math.max(this.audio.masterGain.gain.value, 0.0001);
+    this.audio.fadeIn(1.5);
+  }
+}
+
+setSolfeggioMix(value) {
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) return;
+
+  this.solfeggioMix = Math.max(0, Math.min(1, parsed));
+
+  if (this.solfeggioLayer?.gain) {
+    this.solfeggioLayer.gain.gain.rampTo(this.getSolfeggioGainTarget(), 0.2);
+  }
+}
+
+getSolfeggioGainTarget() {
+  // Keep overlay usable but not overpowering the base mode.
+  return 0.08 + this.solfeggioMix * 0.42;
+}
+
+clearSolfeggio() {
+  if (!this.solfeggioLayer) return;
+
+  const layer = this.solfeggioLayer;
+  layer.gain.gain.rampTo(0, 0.9);
+
+  setTimeout(() => {
+    layer.osc?.stop();
+    layer.lfo?.stop();
+  }, 900);
+
+  this.solfeggioLayer = null;
 }
 
 setIntensity(value) {

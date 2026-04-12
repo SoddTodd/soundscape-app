@@ -22,7 +22,9 @@ body, html {
 #background {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, #1a2a3a, #000);
+  background:
+    radial-gradient(circle at 30% 30%, #1a2a3a, transparent),
+    radial-gradient(circle at 70% 70%, #0a0f1a, #000);
   transition: background 3s ease;
   z-index: 0;
 }
@@ -59,24 +61,26 @@ body, html {
 }
 
 button {
-  margin: 4px;
-  padding: 8px 12px;
   border: none;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 8px 14px;
+
+  background: rgba(255,255,255,0.08);
   color: white;
+
   backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-1px);
 }
 
 button.active {
-  background: rgba(255,255,255,0.35);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.3);
+  box-shadow: 0 0 20px rgba(255,255,255,0.3);
 }
 
 #center {
@@ -93,15 +97,16 @@ button.active {
 }
 
 #orb {
-  width: clamp(180px, 30vw, 280px);
-  height: clamp(180px, 30vw, 280px);
+  width: clamp(180px, 30vw, 300px);
+  height: clamp(180px, 30vw, 300px);
   border-radius: 50%;
-  margin: 0 auto;
 
-  background: radial-gradient(circle, rgba(255,255,255,0.2), transparent);
-  filter: blur(clamp(24px, 5vw, 40px));
+  background: radial-gradient(circle, rgba(255,255,255,0.25), transparent);
 
-  transition: transform 1s ease, opacity 1s ease;
+  filter: blur(50px);
+  opacity: 0.9;
+
+  animation: pulse 6s ease-in-out infinite;
 }
 
 #timer {
@@ -116,11 +121,14 @@ button.active {
 #phase {
   font-size: 14px;
   opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 #time {
   font-size: clamp(32px, 6vw, 48px);
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 1px;
 }
 
 #bottom {
@@ -193,8 +201,18 @@ button.active {
 }
 
 input[type=range] {
-  width: 200px;
-  margin-top: 10px;
+  appearance: none;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 5px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
 }
 
 #textures {
@@ -203,6 +221,63 @@ input[type=range] {
 
 #textures button {
   font-size: 16px;
+}
+
+#tones {
+  align-items: center;
+}
+
+#tones label {
+  font-size: 13px;
+  opacity: 0.85;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#solfeggio-select {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  min-width: 180px;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+#solfeggio-select:focus {
+  outline: 1px solid rgba(255,255,255,0.5);
+  outline-offset: 2px;
+}
+
+#solfeggio-select option {
+  background: #0f1724;
+  color: white;
+}
+
+#solfeggio-mix-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#solfeggio-mix-control label {
+  font-size: 12px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#solfeggio-mix {
+  width: 120px;
+}
+
+#solfeggio-hint {
+  flex-basis: 100%;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  color: rgba(255,255,255,0.72);
 }
 
 @media (max-width: 980px) {
@@ -244,6 +319,25 @@ input[type=range] {
 
   .control-row {
     gap: 8px;
+  }
+
+  #solfeggio-select {
+    min-width: 0;
+    width: min(100%, 260px);
+  }
+
+  #solfeggio-mix-control {
+    width: min(100%, 260px);
+    justify-content: center;
+  }
+
+  #solfeggio-mix {
+    width: 100%;
+  }
+
+  #solfeggio-hint {
+    max-width: 420px;
+    margin-top: 4px;
   }
 
   button {
@@ -315,4 +409,18 @@ input[type=range] {
   #time {
     font-size: clamp(28px, 10vw, 42px);
   }
+}
+
+.glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 10px 15px;
+  display: inline-block;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.85; }
 }

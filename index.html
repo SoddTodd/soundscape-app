@@ -8,7 +8,6 @@
 </head>
 <body>
   <div id="app">
-
     <!-- 🌌 Background -->
     <div id="background"></div>
     <canvas id="particles"></canvas>
@@ -34,6 +33,32 @@
         <button onclick="playMode('deepFocus', this)">Deep Focus</button>
         <button onclick="playMode('flowState', this)">Flow State</button>
         <button onclick="playMode('energyBoost', this)">Energy Boost</button>
+      </div>
+
+      <div id="tones" class="control-row">
+        <label for="solfeggio-select">Solfeggio</label>
+        <select id="solfeggio-select" onchange="setSolfeggio(this.value)">
+          <option value="">Select Frequency</option>
+          <option value="solfeggio396">396 Hz</option>
+          <option value="solfeggio417">417 Hz</option>
+          <option value="solfeggio528">528 Hz</option>
+          <option value="solfeggio639">639 Hz</option>
+          <option value="solfeggio741">741 Hz</option>
+          <option value="solfeggio852">852 Hz</option>
+        </select>
+        <div id="solfeggio-mix-control">
+          <label for="solfeggio-mix">Blend</label>
+          <input
+            id="solfeggio-mix"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.55"
+            oninput="setSolfeggioMix(this.value)"
+          >
+        </div>
+        <div id="solfeggio-hint" aria-live="polite">Pick a frequency to see its vibe.</div>
       </div>
     </div>
 
@@ -91,6 +116,16 @@
         <p><strong>Stop:</strong> Fade out all active sounds immediately.</p>
         <p><strong>Reset:</strong> Return timer to default state (25 min focus, Cycle 1).</p>
         <p><strong>Intensity Slider:</strong> Adjust volume and movement of the soundscape in real-time.</p>
+      </div>
+
+      <div class="definition-panel" id="solfeggio-definitions">
+        <h3>Solfeggio Overlay</h3>
+        <p><strong>How it Works:</strong> Solfeggio plays as an overlay layer, so it can run together with any focus mode.</p>
+        <p><strong>Blend:</strong> Use Blend to control how prominent the Solfeggio layer is in the overall mix.</p>
+        <p><strong>396 Hz:</strong> Grounded, low emphasis.</p>
+        <p><strong>417 Hz:</strong> Warm, gently moving profile.</p>
+        <p><strong>528 Hz:</strong> Balanced center profile.</p>
+        <p><strong>639/741/852 Hz:</strong> Progressively clearer and brighter upper-band character.</p>
       </div>
     </div>
 

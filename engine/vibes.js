@@ -64,5 +64,48 @@ energyBoost: {
   filterRange: [400, 1600],
   lfoSpeed: 0.1
 },
+
+solfeggio528: {
+  drone: { freq: 528, volume: -21 },
+  noise: { type: "pink", volume: -43 },
+  filterRange: [240, 920],
+  lfoSpeed: 0.022
+},
+
+solfeggio396: {
+  drone: { freq: 396, volume: -22 },
+  noise: { type: "brown", volume: -34 },
+  filterRange: [120, 420],
+  lfoSpeed: 0.014
+},
+
+solfeggio417: {
+  drone: { freq: 417, volume: -21 },
+  noise: { type: "pink", volume: -37 },
+  filterRange: [160, 560],
+  lfoSpeed: 0.03
+},
+
+solfeggio639: {
+  drone: { freq: 639, volume: -22 },
+  noise: { type: "white", volume: -44 },
+  filterRange: [340, 1250],
+  lfoSpeed: 0.04
+},
+
+solfeggio741: {
+  drone: { freq: 741, volume: -23 },
+  noise: { type: "white", volume: -46 },
+  filterRange: [420, 1480],
+  lfoSpeed: 0.05
+},
+
+solfeggio852: {
+  drone: { freq: 852, volume: -24 },
+  noise: { type: "white", volume: -48 },
+  filterRange: [520, 1800],
+  lfoSpeed: 0.065
+}
   
 };
+

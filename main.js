@@ -6,6 +6,19 @@ const vibe = new VibeEngine(audio);
 
 const orb = document.getElementById("orb");
 const background = document.getElementById("background");
+const solfeggioSelect = document.getElementById("solfeggio-select");
+const solfeggioMix = document.getElementById("solfeggio-mix");
+const solfeggioHint = document.getElementById("solfeggio-hint");
+const BASE_BACKGROUND_GRADIENT =
+  "radial-gradient(circle at 30% 30%, #1a2a3a, transparent), radial-gradient(circle at 70% 70%, #0a0f1a, #000)";
+const SOLFEGGIO_HINTS = {
+  solfeggio396: "396 Hz: low-band emphasis with slow modulation for stable, grounded perception.",
+  solfeggio417: "417 Hz: warm mid-low profile with gentle movement to reduce static listening fatigue.",
+  solfeggio528: "528 Hz: balanced spectral center with moderate dynamics for neutral sustained focus.",
+  solfeggio639: "639 Hz: clearer upper-mid presence with broader openness and articulation.",
+  solfeggio741: "741 Hz: brighter high-mid contour with faster movement and sharper definition.",
+  solfeggio852: "852 Hz: upper-band airy profile with the widest openness and lightest perceived weight."
+};
 
 let intensity = 0.5;
 let pulse = 0;
@@ -23,6 +36,8 @@ async function ensureAudioInitialized() {
   isAudioInitialized = true;
 }
 
+
+
 function setActiveButton(groupSelector, activeBtn) {
   document.querySelectorAll(groupSelector).forEach(btn => btn.classList.remove("active"));
   if (activeBtn) activeBtn.classList.add("active");
@@ -32,6 +47,12 @@ function setTextureButtonByType(type) {
   const buttons = Array.from(document.querySelectorAll("#textures button"));
   const activeBtn = buttons.find(btn => btn.textContent.toLowerCase().includes(type));
   setActiveButton("#textures button", activeBtn || null);
+}
+
+function updateSolfeggioHint(mode) {
+  if (!solfeggioHint) return;
+  solfeggioHint.textContent =
+    SOLFEGGIO_HINTS[mode] || "Pick a frequency to see its vibe.";
 }
 
 window.setMood = (mood, btn) => {
@@ -45,6 +66,10 @@ window.startApp = async () => {
   await ensureAudioInitialized();
 };
 
+if (solfeggioMix) {
+  vibe.setSolfeggioMix(parseFloat(solfeggioMix.value));
+}
+
 startWeatherUpdates();
 startTimeUpdates();
 
@@ -52,6 +77,8 @@ window.playMode = async (mode, btn) => {
   await ensureAudioInitialized();
   await vibe.play(mode);
   setActiveButton("#modes button", btn);
+
+  updateSolfeggioHint(solfeggioSelect?.value || "");
 
   vibe.applyMood(currentMood);
   vibe.setIntensity(intensity);
@@ -68,6 +95,25 @@ window.playMode = async (mode, btn) => {
   if (mode === "deepFocus") createParticles(20);
   if (mode === "flowState") createParticles(60);
   if (mode === "energyBoost") createParticles(90);
+};
+
+window.setSolfeggio = async (mode) => {
+  await ensureAudioInitialized();
+
+  if (!mode) {
+    vibe.setSolfeggioTone(null);
+    updateSolfeggioHint("");
+    return;
+  }
+
+  vibe.setSolfeggioTone(mode);
+  updateSolfeggioHint(mode);
+};
+
+window.setSolfeggioMix = (value) => {
+  const mix = parseFloat(value);
+  if (Number.isNaN(mix)) return;
+  vibe.setSolfeggioMix(mix);
 };
 
 window.playRain = async () => {
@@ -93,8 +139,7 @@ window.playRain = async () => {
 
   createParticles(80);
 
-  background.style.background =
-    "radial-gradient(circle at center, #2a3a4f, #000814)";
+  background.style.background = BASE_BACKGROUND_GRADIENT;
 
   orb.style.background =
     "radial-gradient(circle, rgba(120,160,255,0.3), transparent)";
@@ -126,8 +171,7 @@ window.playSleep = async () => {
 
   createParticles(40); // calmer than rain
 
-  background.style.background =
-    "radial-gradient(circle at center, #1a1025, #000)";
+  background.style.background = BASE_BACKGROUND_GRADIENT;
 
   orb.style.background =
     "radial-gradient(circle, rgba(180,120,255,0.25), transparent)";
@@ -140,6 +184,11 @@ window.stopAll = () => {
   vibe.clearTextureSelection();
   manualTextureChoice = null;
   currentAutoTextureType = null;
+
+  if (solfeggioSelect) {
+    solfeggioSelect.value = "";
+  }
+  updateSolfeggioHint("");
 
   document.querySelectorAll("#moods > button, #textures button, #modes button")
     .forEach(btn => btn.classList.remove("active"));
@@ -317,27 +366,7 @@ function getWeatherType(weather) {
 }
 
 function applyTimeVisuals(context) {
-  switch (context) {
-    case "morning":
-      background.style.background =
-        "radial-gradient(circle, #FFD580, #FF8C42)";
-      break;
-
-    case "afternoon":
-      background.style.background =
-        "radial-gradient(circle at center, #1a2a3a, #000)";
-      break;
-
-    case "evening":
-      background.style.background =
-        "radial-gradient(circle, #2a3a6f, #000)";
-      break;
-
-    case "night":
-      background.style.background =
-        "radial-gradient(circle, #120018, #000)";
-      break;
-  }
+  background.style.background = BASE_BACKGROUND_GRADIENT;
 }
 
 function applyWeatherVisuals(type) {
@@ -512,8 +541,7 @@ async function onWorkStart() {
 
   createParticles(40);
 
-  background.style.background =
-    "radial-gradient(circle at center, #1a2a3a, #000)";
+  background.style.background = BASE_BACKGROUND_GRADIENT;
 
   orb.style.background =
     "radial-gradient(circle, rgba(120,200,255,0.3), transparent)";
@@ -532,8 +560,7 @@ async function onBreakStart() {
 
   createParticles(20);
 
-  background.style.background =
-    "radial-gradient(circle at center, #1a1025, #000)";
+  background.style.background = BASE_BACKGROUND_GRADIENT;
 
   orb.style.background =
     "radial-gradient(circle, rgba(200,150,255,0.25), transparent)";
