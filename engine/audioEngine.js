@@ -78,19 +78,32 @@ export class AudioEngine {
   }
 
   fadeIn(time = 3) {
-    this.masterGain.gain.rampTo(1, time);
+    try {
+      this.masterGain.gain.rampTo(1, time);
+    } catch {
+      this.masterGain.gain.value = 1;
+    }
   }
 
   fadeOut(time = 2) {
-    this.masterGain.gain.rampTo(0, time);
+    try {
+      this.masterGain.gain.rampTo(0, time);
+    } catch {
+      this.masterGain.gain.value = 0;
+    }
   }
 
   createBinaural(baseFreq, beatFreq, volume = -25) {
   const leftOsc = new Tone.Oscillator(baseFreq, "sine").start();
   const rightOsc = new Tone.Oscillator(baseFreq + beatFreq, "sine").start();
 
-  const leftGain = new Tone.Gain(Tone.dbToGain(volume));
-  const rightGain = new Tone.Gain(Tone.dbToGain(volume));
+  // Keep carriers very gentle before they even hit gain staging.
+  leftOsc.volume.value = -12;
+  rightOsc.volume.value = -12;
+
+  const targetGain = Tone.dbToGain(volume) * 0.35;
+  const leftGain = new Tone.Gain(0);
+  const rightGain = new Tone.Gain(0);
 
   const leftPanner = new Tone.Panner(-1); // full left
   const rightPanner = new Tone.Panner(1); // full right
@@ -102,7 +115,8 @@ export class AudioEngine {
     leftOsc,
     rightOsc,
     leftGain,
-    rightGain
+    rightGain,
+    targetGain
   };
 }
 

@@ -15,6 +15,8 @@ const binauralHint = document.getElementById("binaural-hint");
 const solfeggioSelect = document.getElementById("solfeggio-select");
 const solfeggioMix = document.getElementById("solfeggio-mix");
 const solfeggioHint = document.getElementById("solfeggio-hint");
+const APP_VERSION = "20260413-18";
+const FEEDBACK_ENDPOINT = window.FEEDBACK_ENDPOINT || "";
 const BASE_BACKGROUND_GRADIENT =
   "radial-gradient(circle at 30% 30%, #1a2a3a, transparent), radial-gradient(circle at 70% 70%, #0a0f1a, #000)";
 const SOLFEGGIO_HINTS = {
@@ -100,12 +102,12 @@ function setBinauralHintText(type) {
   if (!binauralHint) return;
 
   if (type === "focus") {
-    binauralHint.textContent = "Focus beat: 10 Hz. Best with stereo headphones.";
+    binauralHint.textContent = "Focus beat: 6 Hz. Ultra-soft single-layer binaural tone. Best with stereo headphones.";
     return;
   }
 
   if (type === "relax") {
-    binauralHint.textContent = "Relax beat: 4 Hz. Best with stereo headphones.";
+    binauralHint.textContent = "Relax beat: 3 Hz. Ultra-soft single-layer binaural tone. Best with stereo headphones.";
     return;
   }
 
@@ -116,13 +118,13 @@ function getBinauralProfile(type) {
   if (type === "relax") {
     return {
       mode: "binauralRelax",
-      texture: "rain"
+      texture: "none"
     };
   }
 
   return {
     mode: "binauralFocus",
-    texture: "cafe"
+    texture: "none"
   };
 }
 
@@ -131,6 +133,13 @@ async function activateBinauralProfile(type, btn) {
 
   manualTextureChoice = null;
   currentAutoTextureType = profile.texture;
+
+  // Binaural mode is intentionally single-layer; clear any solfeggio overlay.
+  vibe.setSolfeggioTone(null);
+  if (solfeggioSelect) {
+    solfeggioSelect.value = "";
+  }
+  updateSolfeggioHint("");
 
   showBinauralOptions(true);
   setBinauralHintText(type);
@@ -718,8 +727,8 @@ function getAdaptiveTextureType() {
   const weather = lastWeatherType;
   const time = lastTimeContext;
 
-  if (mode === "binauralFocus") return "cafe";
-  if (mode === "binauralRelax") return "rain";
+  if (mode === "binauralFocus") return "none";
+  if (mode === "binauralRelax") return "none";
   if (weather === "storm" || weather === "rain") return "rain";
   if (time === "night") return mode === "deepSleep" ? "ocean" : "wind";
   if (time === "evening") return mode === "energyBoost" ? "cafe" : "ocean";
@@ -835,6 +844,98 @@ window.loadPreset = async (preset) => {
 window.deletePreset = (index) => {
   presets.delete(index);
   renderPresets();
+};
+
+function getCurrentBinauralType() {
+  if (vibe.currentMode === "binauralFocus") return "focus";
+  if (vibe.currentMode === "binauralRelax") return "relax";
+  return null;
+}
+
+function setFeedbackStatus(message, isError = false) {
+  const status = document.getElementById("feedback-status");
+  if (!status) return;
+
+  status.textContent = message;
+  status.classList.toggle("error", isError);
+}
+
+window.submitFeedback = async (event) => {
+  if (event) event.preventDefault();
+
+  const typeEl = document.getElementById("feedback-type");
+  const messageEl = document.getElementById("feedback-message");
+  const submitBtn = document.getElementById("feedback-submit-btn");
+
+  if (!typeEl || !messageEl) return false;
+
+  const type = typeEl.value;
+  const message = messageEl.value.trim();
+
+  if (message.length < 6) {
+    setFeedbackStatus("Please add a bit more detail.", true);
+    return false;
+  }
+
+  const payload = {
+    type,
+    message,
+    createdAt: new Date().toISOString(),
+    appVersion: APP_VERSION,
+    context: {
+      mode: vibe.currentMode || null,
+      binauralType: getCurrentBinauralType(),
+      mood: currentMood,
+      intensity,
+      texture: getCurrentTexture(),
+      solfeggioMode: vibe.selectedSolfeggioType || "",
+      solfeggioMix: vibe.solfeggioMix,
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      viewport: {
+        width: window.innerWidth,
+        height: window.innerHeight
+      }
+    }
+  };
+
+  try {
+    if (submitBtn) submitBtn.disabled = true;
+
+    if (!FEEDBACK_ENDPOINT) {
+      const text = JSON.stringify(payload, null, 2);
+      try {
+        await navigator.clipboard.writeText(text);
+        setFeedbackStatus("No endpoint set yet. Payload copied to clipboard.");
+      } catch {
+        setFeedbackStatus("No endpoint set yet. See console payload.");
+      }
+      console.log("[Feedback payload]", payload);
+      return false;
+    }
+
+    const res = await fetch(FEEDBACK_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`Feedback request failed: ${res.status}`);
+    }
+
+    messageEl.value = "";
+    setFeedbackStatus("Thank you. Feedback sent.");
+  } catch (err) {
+    console.error("[Feedback submit failed]", err);
+    setFeedbackStatus("Could not send right now. Try again in a moment.", true);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+
+  return false;
 };
 
 function renderPresets() {

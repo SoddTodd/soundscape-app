@@ -495,6 +495,67 @@ input[type=range]::-webkit-slider-thumb {
   opacity: 0.7;
 }
 
+#feedback-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+#feedback-details[open] summary {
+  margin-bottom: 12px;
+}
+
+#feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#feedback-form label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+#feedback-type,
+#feedback-message {
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+#feedback-type {
+  width: 100%;
+}
+
+#feedback-type option {
+  background: #0f1724;
+  color: #ffffff;
+}
+
+#feedback-message {
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+#feedback-status {
+  min-height: 16px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+}
+
+#feedback-status.error {
+  color: #ffb8b8;
+}
+
 @media (max-width: 980px) {
   #presets {
     width: min(100%, 320px);

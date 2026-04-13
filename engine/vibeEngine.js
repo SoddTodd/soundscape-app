@@ -33,6 +33,8 @@ async play(vibeName) {
   const config = vibes[vibeName];
   if (!config) return;
 
+  const isBinauralOnly = Boolean(config.binauralOnly);
+
   this.startSession();
   this.currentMode = vibeName;
 
@@ -40,7 +42,40 @@ async play(vibeName) {
   if (this.current) {
     this.audio.fadeOut(2);
     await new Promise(r => setTimeout(r, 2000));
-    this.stop(true);
+    this.stop(!isBinauralOnly);
+  }
+
+  // Clean binaural mode: just the two carrier oscillators, no noise/evolution stack.
+  if (isBinauralOnly && config.binaural) {
+    this.clearSolfeggio();
+
+    const b = this.audio.createBinaural(
+      config.binaural.base,
+      config.binaural.beat,
+      config.binaural.volume ?? -40
+    );
+
+    b.leftGain.gain.value = 0;
+    b.rightGain.gain.value = 0;
+
+    this.safeRamp(b.leftGain.gain, b.targetGain, 10);
+    this.safeRamp(b.rightGain.gain, b.targetGain, 10);
+
+    this.current = {
+      noise: null,
+      filter: null,
+      lfo: null,
+      texture: null,
+      drone: null,
+      noiseGain: null,
+      textureGain: null,
+      droneGain: null,
+      binaural: b
+    };
+
+    this.audio.masterGain.gain.value = 0.0001;
+    this.audio.fadeIn(4);
+    return;
   }
 
   this.startEvolution(config);
@@ -92,8 +127,8 @@ if (config.binaural) {
   b.leftGain.gain.value = 0;
   b.rightGain.gain.value = 0;
 
-  this.safeRamp(b.leftGain.gain, 1, 3);
-  this.safeRamp(b.rightGain.gain, 1, 3);
+  this.safeRamp(b.leftGain.gain, b.targetGain, 8);
+  this.safeRamp(b.rightGain.gain, b.targetGain, 8);
 }
 
   this.current = { noise, filter, lfo, texture, drone, noiseGain, textureGain, droneGain, binaural };
@@ -246,6 +281,11 @@ clearSolfeggio() {
 setIntensity(value) {
   if (!this.current) return;
 
+  if (this.currentMode?.startsWith("binaural")) {
+    // Keep binaural modes stable and minimal: no extra intensity reshaping.
+    return;
+  }
+
   // Scale noise volume
   this.current.noise.volume.value = -30 + value * 20;
 
@@ -268,8 +308,10 @@ clearTextureSelection() {
 }
 
 startEvolution(config) {
+  if (!config?.filterRange) return;
+
   this.evolutionInterval = setInterval(() => {
-    if (!this.current) return;
+    if (!this.current || !this.current.filter) return;
 
     const t = this.getSessionTime();
 
@@ -301,19 +343,21 @@ startEvolution(config) {
         (config.filterRange[1] - config.filterRange[0]) *
         intensityFactor;
 
-    this.current.filter.frequency.rampTo(newFreq, 15);
+    this.safeRamp(this.current.filter.frequency, newFreq, 15);
 
     // 🔊 Reduce noise intensity over time
     if (this.current.noise) {
-      const baseVol = -20;
+      const baseVol = typeof config.noise?.volume === "number"
+        ? config.noise.volume
+        : -20;
       const newVol = baseVol - (1 - intensityFactor) * 10;
-      this.current.noise.volume.rampTo(newVol, 10);
+      this.safeRamp(this.current.noise.volume, newVol, 10);
     }
 
     // 🌫️ Drone becomes more dominant over time
     if (this.current.drone) {
       const droneVol = -35 + (1 - intensityFactor) * 10;
-      this.current.drone.volume.rampTo(droneVol, 10);
+      this.safeRamp(this.current.drone.volume, droneVol, 10);
     }
 
   }, 10000); // every 10 sec
@@ -343,6 +387,7 @@ getTimeContext() {
 
 applyTimeContext(context) {
   if (!this.current) return;
+  if (!this.current.filter) return;
 
   switch (context) {
     case "morning":
@@ -391,7 +436,9 @@ applyWeatherContext(type) {
 
     case "storm":
       // deeper + darker
-      this.current.filter.frequency.value *= 0.7;
+      if (this.current.filter) {
+        this.current.filter.frequency.value *= 0.7;
+      }
 
       if (this.current.noise) {
         this.current.noise.volume.value += 8;
@@ -402,6 +449,11 @@ applyWeatherContext(type) {
 
 applyMood(mood) {
   if (!this.current) return;
+
+  if (this.currentMode?.startsWith("binaural")) {
+    // Keep binaural modes stable and minimal: no mood reshaping.
+    return;
+  }
 
   // All values are absolute targets so moods don't stack on each other.
   // rampTo gives smooth transitions. LFO frequency uses .value directly
