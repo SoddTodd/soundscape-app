@@ -1,5 +1,8 @@
 import { AudioEngine } from "./engine/audioEngine.js";
 import { VibeEngine } from "./engine/vibeEngine.js";
+import { PresetManager } from "./presets.js";
+
+const presets = new PresetManager();
 
 const audio = new AudioEngine();
 const vibe = new VibeEngine(audio);
@@ -50,6 +53,20 @@ function setTextureButtonByType(type) {
   const buttons = Array.from(document.querySelectorAll("#textures button"));
   const activeBtn = buttons.find(btn => btn.textContent.toLowerCase().includes(type));
   setActiveButton("#textures button", activeBtn || null);
+}
+
+function findModeButton(mode) {
+  return document.querySelector(`#modes .mode-btn[onclick*="'${mode}'"]`);
+}
+
+function findMoodButton(mood) {
+  return document.querySelector(`#moods > button[onclick*="'${mood}'"]`);
+}
+
+function getCurrentTexture() {
+  if (manualTextureChoice !== null) return manualTextureChoice;
+  if (currentAutoTextureType) return currentAutoTextureType;
+  return vibe.selectedTextureType || "none";
 }
 
 function updateSolfeggioHint(mode) {
@@ -738,3 +755,133 @@ window.playBinaural = async (btn) => {
 
   await activateBinauralProfile("focus", defaultOption || btn);
 };
+
+window.savePreset = () => {
+  const name = prompt("Name your preset:");
+  if (!name) return;
+
+  const mode = vibe.currentMode || null;
+  if (!mode) {
+    alert("Start a mode first, then save a preset.");
+    return;
+  }
+
+  const preset = {
+    name,
+    mode,
+    texture: getCurrentTexture(),
+    mood: currentMood,
+    intensity,
+    solfeggioMode: vibe.selectedSolfeggioType || solfeggioSelect?.value || "",
+    solfeggioMix: Number(vibe.solfeggioMix)
+  };
+
+  presets.save(preset);
+
+  renderPresets();
+};
+
+window.loadPreset = async (preset) => {
+  if (!preset) return;
+
+  try {
+  if (preset.mode) {
+    await window.playMode(preset.mode, findModeButton(preset.mode));
+  }
+
+  if (typeof preset.mood === "string") {
+    window.setMood(preset.mood, findMoodButton(preset.mood));
+  }
+
+  const parsedIntensity = Number(preset.intensity);
+  if (!Number.isNaN(parsedIntensity)) {
+    intensity = Math.max(0, Math.min(1, parsedIntensity));
+    vibe.setIntensity(intensity);
+
+    const slider = document.getElementById("intensity-slider");
+    if (slider) {
+      slider.value = String(intensity);
+    }
+  }
+
+  const texture = typeof preset.texture === "string" ? preset.texture : "none";
+  manualTextureChoice = texture;
+  currentAutoTextureType = null;
+  vibe.setTexture(texture);
+  setTextureButtonByType(texture);
+
+  const nextSolfeggioMode =
+    typeof preset.solfeggioMode === "string" ? preset.solfeggioMode : "";
+  await window.setSolfeggio(nextSolfeggioMode);
+
+  if (solfeggioSelect) {
+    solfeggioSelect.value = nextSolfeggioMode;
+  }
+
+  const parsedSolfeggioMix = Number(preset.solfeggioMix);
+  if (!Number.isNaN(parsedSolfeggioMix)) {
+    const clampedMix = Math.max(0, Math.min(1, parsedSolfeggioMix));
+    window.setSolfeggioMix(String(clampedMix));
+    if (solfeggioMix) {
+      solfeggioMix.value = String(clampedMix);
+    }
+  }
+
+  } catch (err) {
+    console.error("[Preset load failed]", err);
+  }
+};
+
+window.deletePreset = (index) => {
+  presets.delete(index);
+  renderPresets();
+};
+
+function renderPresets() {
+  const container = document.getElementById("presetList");
+  if (!container) return;
+
+  const all = presets.getAll();
+
+  container.innerHTML = "";
+
+  if (!all.length) {
+    const empty = document.createElement("div");
+    empty.className = "preset-empty";
+    empty.textContent = "No presets yet. Save your current setup.";
+    container.appendChild(empty);
+    return;
+  }
+
+  all.forEach((p, i) => {
+    const row = document.createElement("div");
+    row.className = "preset-row";
+
+    const loadBtn = document.createElement("button");
+    loadBtn.className = "preset-load";
+    loadBtn.textContent = p.name || `Preset ${i + 1}`;
+    loadBtn.title = `Mode: ${p.mode}  |  Texture: ${p.texture}  |  Mood: ${p.mood}`;
+
+    const detail = document.createElement("span");
+    detail.className = "preset-detail";
+    detail.textContent = `${p.mode} · ${p.texture} · ${p.mood}`;
+
+    loadBtn.addEventListener("click", () => {
+      window.loadPreset(p);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "preset-delete";
+    deleteBtn.textContent = "X";
+    deleteBtn.addEventListener("click", () => {
+      window.deletePreset(i);
+    });
+
+    row.appendChild(loadBtn);
+    row.appendChild(deleteBtn);
+    loadBtn.appendChild(detail);
+    container.appendChild(row);
+  });
+}
+
+renderPresets();

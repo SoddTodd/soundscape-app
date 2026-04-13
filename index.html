@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Soundscape App</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260413-8">
 </head>
 <body>
   <div id="app">
@@ -92,6 +92,12 @@
 
     <!-- Definition panels -->
     <div id="definitions">
+      <div class="definition-panel" id="presets" aria-label="Presets">
+        <h3>Presets</h3>
+        <button id="save-preset-btn" onclick="savePreset()">Save preset</button>
+        <div id="presetList"></div>
+      </div>
+
       <div class="definition-panel" id="moods-definitions">
         <h3>Mood Settings</h3>
         <p><strong>Stress Relief:</strong> Softer, deeper layers to ease tension and calm your mind.</p>
@@ -142,6 +148,6 @@
   </div>
 
   <script src="https://unpkg.com/tone"></script>
-  <script type="module" src="main.js"></script>
+  <script type="module" src="main.js?v=20260413-8"></script>
 </body>
 </html>

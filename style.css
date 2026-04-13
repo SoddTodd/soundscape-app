@@ -89,7 +89,7 @@ button.active {
   position: relative;
   text-align: center;
   width: 100%;
-  min-height: 360px;
+  min-height: clamp(220px, 28vh, 320px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -442,12 +442,63 @@ input[type=range]::-webkit-slider-thumb {
   }
 }
 
-.glass {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 10px 15px;
-  display: inline-block;
+#presets {
+  min-width: 0;
+  width: 100%;
+  text-align: left;
+}
+
+#save-preset-btn {
+  width: 100%;
+}
+
+#presetList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+#presetList .preset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#presetList .preset-load {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+#presetList .preset-detail {
+  font-size: 10px;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+#presetList .preset-delete {
+  padding: 8px 10px;
+}
+
+#presetList .preset-empty {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+@media (max-width: 980px) {
+  #presets {
+    width: min(100%, 320px);
+  }
 }
 
 @keyframes pulse {

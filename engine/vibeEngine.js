@@ -13,6 +13,22 @@ export class VibeEngine {
     this.selectedTextureType = "none";
   }
 
+  safeRamp(param, value, time = 0) {
+    if (!param) return;
+
+    try {
+      if (typeof time === "number" && time > 0) {
+        param.rampTo(value, time);
+      } else {
+        param.value = value;
+      }
+    } catch {
+      try {
+        param.value = value;
+      } catch {}
+    }
+  }
+
 async play(vibeName) {
   const config = vibes[vibeName];
   if (!config) return;
@@ -35,7 +51,7 @@ async play(vibeName) {
   config.noise.volume
 );
 
-noiseGain.gain.rampTo(1, 3);
+this.safeRamp(noiseGain.gain, 1, 3);
 
   const lfo = this.audio.addLFO(
     filter.frequency,
@@ -60,7 +76,7 @@ noiseGain.gain.rampTo(1, 3);
     this.audio.addLFO(d.filter.frequency, 200, 600, 0.03);
     droneGain = d.gain;
 
-    droneGain.gain.rampTo(1, 5);
+    this.safeRamp(droneGain.gain, 1, 5);
   }
 
 if (config.binaural) {
@@ -76,8 +92,8 @@ if (config.binaural) {
   b.leftGain.gain.value = 0;
   b.rightGain.gain.value = 0;
 
-  b.leftGain.gain.rampTo(1, 3);
-  b.rightGain.gain.rampTo(1, 3);
+  this.safeRamp(b.leftGain.gain, 1, 3);
+  this.safeRamp(b.rightGain.gain, 1, 3);
 }
 
   this.current = { noise, filter, lfo, texture, drone, noiseGain, textureGain, droneGain, binaural };
@@ -119,15 +135,15 @@ this.applyTimeContext(timeContext);
   const current = this.current;
   const fadeTime = 2;
 
-  current.noiseGain?.gain.rampTo(0, fadeTime);
+  this.safeRamp(current.noiseGain?.gain, 0, fadeTime);
 
   if (Array.isArray(current.textureGain)) {
-  current.textureGain.forEach(g => g.gain.rampTo(0, fadeTime));
+  current.textureGain.forEach(g => this.safeRamp(g.gain, 0, fadeTime));
 } else {
-  current.textureGain?.gain.rampTo(0, fadeTime);
+  this.safeRamp(current.textureGain?.gain, 0, fadeTime);
 }
 
-  current.droneGain?.gain.rampTo(0, fadeTime);
+  this.safeRamp(current.droneGain?.gain, 0, fadeTime);
 
   setTimeout(() => {
     current.noise?.stop();
@@ -152,8 +168,8 @@ if (Array.isArray(current.texture)) {
   }
 
   if (current.binaural) {
-  current.binaural.leftGain.gain.rampTo(0, fadeTime);
-  current.binaural.rightGain.gain.rampTo(0, fadeTime);
+  this.safeRamp(current.binaural.leftGain.gain, 0, fadeTime);
+  this.safeRamp(current.binaural.rightGain.gain, 0, fadeTime);
 
   setTimeout(() => {
     current.binaural.leftOsc.stop();
@@ -187,7 +203,7 @@ setSolfeggioTone(vibeName) {
   const lfo = this.audio.addLFO(d.filter.frequency, lfoMin, lfoMax, 0.012);
 
   d.gain.gain.value = 0;
-  d.gain.gain.rampTo(this.getSolfeggioGainTarget(), 1.6);
+  this.safeRamp(d.gain.gain, this.getSolfeggioGainTarget(), 1.6);
 
   this.solfeggioLayer = { osc: d.osc, filter: d.filter, gain: d.gain, lfo };
 
@@ -204,7 +220,7 @@ setSolfeggioMix(value) {
   this.solfeggioMix = Math.max(0, Math.min(1, parsed));
 
   if (this.solfeggioLayer?.gain) {
-    this.solfeggioLayer.gain.gain.rampTo(this.getSolfeggioGainTarget(), 0.2);
+    this.safeRamp(this.solfeggioLayer.gain.gain, this.getSolfeggioGainTarget(), 0.2);
   }
 }
 
@@ -217,7 +233,7 @@ clearSolfeggio() {
   if (!this.solfeggioLayer) return;
 
   const layer = this.solfeggioLayer;
-  layer.gain.gain.rampTo(0, 0.9);
+  this.safeRamp(layer.gain.gain, 0, 0.9);
 
   setTimeout(() => {
     layer.osc?.stop();
@@ -388,38 +404,43 @@ applyMood(mood) {
   if (!this.current) return;
 
   // All values are absolute targets so moods don't stack on each other.
-  // rampTo gives a smooth audible transition when switching moods.
+  // rampTo gives smooth transitions. LFO frequency uses .value directly
+  // because Tone's exponentialRampTo fails on a freshly created LFO param.
+  const safeRamp = (param, value, t) => {
+    try { param.rampTo(value, t); } catch { try { param.value = value; } catch {} }
+  };
+
   switch (mood) {
     case "stressed":
       // Dark, heavy, slow — grounding and de-escalating
-      if (this.current.noise) this.current.noise.volume.rampTo(-12, 2);
-      if (this.current.drone) this.current.drone.volume.rampTo(-22, 2);
-      this.current.filter.frequency.rampTo(220, 2);
-      if (this.current.lfo) this.current.lfo.frequency.rampTo(0.02, 2);
+      if (this.current.noise) safeRamp(this.current.noise.volume, -12, 2);
+      if (this.current.drone) safeRamp(this.current.drone.volume, -22, 2);
+      safeRamp(this.current.filter.frequency, 220, 2);
+      if (this.current.lfo) this.current.lfo.frequency.value = 0.02;
       break;
 
     case "tired":
       // Very warm, muffled, minimal movement — like being wrapped in a blanket
-      if (this.current.noise) this.current.noise.volume.rampTo(-24, 2);
-      if (this.current.drone) this.current.drone.volume.rampTo(-20, 2);
-      this.current.filter.frequency.rampTo(160, 2);
-      if (this.current.lfo) this.current.lfo.frequency.rampTo(0.015, 2);
+      if (this.current.noise) safeRamp(this.current.noise.volume, -24, 2);
+      if (this.current.drone) safeRamp(this.current.drone.volume, -20, 2);
+      safeRamp(this.current.filter.frequency, 160, 2);
+      if (this.current.lfo) this.current.lfo.frequency.value = 0.015;
       break;
 
     case "focused":
       // Clear, bright, very little noise — open and alert
-      if (this.current.noise) this.current.noise.volume.rampTo(-32, 2);
-      if (this.current.drone) this.current.drone.volume.rampTo(-36, 2);
-      this.current.filter.frequency.rampTo(1000, 2);
-      if (this.current.lfo) this.current.lfo.frequency.rampTo(0.08, 2);
+      if (this.current.noise) safeRamp(this.current.noise.volume, -32, 2);
+      if (this.current.drone) safeRamp(this.current.drone.volume, -36, 2);
+      safeRamp(this.current.filter.frequency, 1000, 2);
+      if (this.current.lfo) this.current.lfo.frequency.value = 0.08;
       break;
 
     case "calm":
       // Balanced default — moderate everything
-      if (this.current.noise) this.current.noise.volume.rampTo(-20, 2);
-      if (this.current.drone) this.current.drone.volume.rampTo(-30, 2);
-      this.current.filter.frequency.rampTo(500, 2);
-      if (this.current.lfo) this.current.lfo.frequency.rampTo(0.05, 2);
+      if (this.current.noise) safeRamp(this.current.noise.volume, -20, 2);
+      if (this.current.drone) safeRamp(this.current.drone.volume, -30, 2);
+      safeRamp(this.current.filter.frequency, 500, 2);
+      if (this.current.lfo) this.current.lfo.frequency.value = 0.05;
       break;
   }
 }
@@ -437,14 +458,14 @@ async playMinimalBase() {
   // Minimal ambient base: just soft brown noise + quiet drone
   const { noise, filter, gain: noiseGain } = this.audio.createNoise("brown", -40);
   noiseGain.gain.value = 0;
-  noiseGain.gain.rampTo(0.3, 1);
+  this.safeRamp(noiseGain.gain, 0.3, 1);
 
   const lfo = this.audio.addLFO(filter.frequency, 100, 300, 0.02);
 
   const d = this.audio.createDrone(80, -45);
   const droneGain = d.gain;
   droneGain.gain.value = 0;
-  droneGain.gain.rampTo(0.2, 1);
+  this.safeRamp(droneGain.gain, 0.2, 1);
 
   this.current = { noise, filter, lfo, drone: d.osc, droneGain, noiseGain };
   this.audio.masterGain.gain.value = 0.0001;
@@ -474,9 +495,9 @@ setTexture(type, rememberSelection = true) {
     const oldTextureGain = this.current.textureGain;
 
     if (Array.isArray(oldTextureGain)) {
-      oldTextureGain.forEach(g => g.gain.rampTo(0, 1));
+      oldTextureGain.forEach(g => this.safeRamp(g.gain, 0, 1));
     } else {
-      oldTextureGain.gain.rampTo(0, 1);
+      this.safeRamp(oldTextureGain.gain, 0, 1);
     }
 
     this.textureStopTimeout = setTimeout(() => {
@@ -513,7 +534,7 @@ setTexture(type, rememberSelection = true) {
     t.gain.gain.value = 0;
 
     const timer = setTimeout(() => {
-      t.gain.gain.rampTo(layer.gain ?? 1, 2);
+      this.safeRamp(t.gain.gain, layer.gain ?? 1, 2);
     }, (layer.offset ?? 0) * 1000);
     this.textureLayerFadeTimers.push(timer);
 
