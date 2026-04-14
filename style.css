@@ -1,10 +1,12 @@
 :root {
-  --color-bg:      #0a1428;
-  --color-navy:    #1b2a6b;
+  --color-bg:      #062f8a;
+  --color-navy:    #0a3ca1;
   --color-accent:  #f4721e;
   --color-text:    #ffffff;
-  --color-dim:     rgba(255,255,255,0.55);
+  --color-dim:     rgba(232,241,255,0.72);
   --color-border:  rgba(255,255,255,0.3);
+  --color-grid-fine: rgba(214, 230, 255, 0.07);
+  --color-grid-major: rgba(239, 246, 255, 0.18);
   --font-mono:     'IBM Plex Mono', 'OCR A Std', 'Courier New', monospace;
 }
 
@@ -33,20 +35,34 @@ body, html {
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(160deg, #0d1e3a 0%, #0a1428 50%, #060e1f 100%);
+    radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%),
+    linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%);
   transition: background 3s ease;
   z-index: 0;
 }
 
-/* Grid overlay — retro station blueprint feel */
+/* Fine + major blueprint mesh */
+#background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 45%, transparent 42%, rgba(2, 13, 38, 0.25) 100%);
+  pointer-events: none;
+}
+
 #background::after {
   content: '';
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(var(--color-grid-fine) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-fine) 1px, transparent 1px),
+    linear-gradient(var(--color-grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-major) 1px, transparent 1px);
+  background-size: 12px 12px, 12px 12px, 72px 72px, 72px 72px;
+  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
   pointer-events: none;
 }
 
@@ -123,17 +139,13 @@ button.active {
   justify-self: center;
 }
 
-#orb {
-  width: clamp(180px, 30vw, 300px);
-  height: clamp(180px, 30vw, 300px);
-  border-radius: 50%;
-
-  background: radial-gradient(circle, rgba(255,255,255,0.25), transparent);
-
-  filter: blur(50px);
-  opacity: 0.9;
-
-  animation: pulse 6s ease-in-out infinite;
+#wireframe-sphere {
+  width: clamp(260px, 45vw, 540px);
+  height: clamp(260px, 45vw, 540px);
+  display: block;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 12px rgba(170, 208, 255, 0.25));
+  pointer-events: none;
 }
 
 #timer {

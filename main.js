@@ -7,7 +7,7 @@ const presets = new PresetManager();
 const audio = new AudioEngine();
 const vibe = new VibeEngine(audio);
 
-const orb = document.getElementById("orb");
+const sphereCanvas = document.getElementById("wireframe-sphere");
 const background = document.getElementById("background");
 const binauralOptions = document.getElementById("binaural-options");
 const binauralModeButton = document.getElementById("binaural-mode-button");
@@ -18,7 +18,7 @@ const solfeggioHint = document.getElementById("solfeggio-hint");
 const APP_VERSION = "20260413-18";
 const FEEDBACK_ENDPOINT = window.FEEDBACK_ENDPOINT || "";
 const BASE_BACKGROUND_GRADIENT =
-  "radial-gradient(circle at 30% 30%, #1a2a3a, transparent), radial-gradient(circle at 70% 70%, #0a0f1a, #000)";
+  "radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%), radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%), linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%)";
 const SOLFEGGIO_HINTS = {
   solfeggio396: "396 Hz: low-band emphasis with slow modulation for stable, grounded perception.",
   solfeggio417: "417 Hz: warm mid-low profile with gentle movement to reduce static listening fatigue.",
@@ -32,6 +32,24 @@ let intensity = 0.5;
 let pulse = 0;
 let currentMood = "calm";
 let isAudioInitialized = false;
+
+const SPHERE_CONFIG = {
+  pointCount: 92,
+  baseLineWidth: 1.1,
+  connectionDistance: 0.64
+};
+
+const SPHERE_MOOD_COLORS = {
+  stressed: "rgba(255, 181, 181, 0.65)",
+  tired: "rgba(213, 196, 255, 0.68)",
+  focused: "rgba(190, 226, 255, 0.72)",
+  calm: "rgba(188, 239, 212, 0.7)"
+};
+
+let sphereCtx = sphereCanvas ? sphereCanvas.getContext("2d") : null;
+let spherePoints = [];
+let sphereRotation = 0;
+let sphereMoodColor = SPHERE_MOOD_COLORS.calm;
 let lastWeatherType = null;
 let lastTimeContext = null;
 let currentParticleBaseCount = 60;
@@ -244,11 +262,7 @@ window.playRain = async () => {
   createParticles(80);
 
   background.style.background = BASE_BACKGROUND_GRADIENT;
-
-  orb.style.background =
-    "radial-gradient(circle, rgba(120,160,255,0.3), transparent)";
-
-    
+  sphereMoodColor = SPHERE_MOOD_COLORS.focused;
 };
 
 window.playSleep = async () => {
@@ -276,10 +290,7 @@ window.playSleep = async () => {
   createParticles(40); // calmer than rain
 
   background.style.background = BASE_BACKGROUND_GRADIENT;
-
-  orb.style.background =
-    "radial-gradient(circle, rgba(180,120,255,0.25), transparent)";
-
+  sphereMoodColor = SPHERE_MOOD_COLORS.tired;
 };
 
 window.stopAll = () => {
@@ -328,17 +339,17 @@ function animate() {
 
   const scale =
     viewportScale * (
-    1 +
-    Math.sin(pulse) * 0.05 * calmFactor +
-    audioLevel * 0.3);
+      1 +
+      Math.sin(pulse) * 0.05 * calmFactor +
+      audioLevel * 0.3
+    );
 
   const opacity =
     0.5 +
     Math.sin(pulse) * 0.2 * calmFactor +
     audioLevel * 0.5;
 
-  orb.style.transform = `scale(${scale})`;
-  orb.style.opacity = opacity;
+  drawWireframeSphere(audioLevel, calmFactor, scale, opacity);
 
   requestAnimationFrame(animate);
 }
@@ -351,7 +362,7 @@ function getAudioLevel() {
   const values = audio.analyser.getValue();
   if (!values || !values.length) return 0;
 
-  // values are negative dB → convert to usable level
+  // values are negative dB -> convert to usable level
   let sum = 0;
   for (let i = 0; i < values.length; i++) {
     sum += values[i];
@@ -361,6 +372,110 @@ function getAudioLevel() {
 
   // normalize
   return Math.max(0, (avg + 100) / 100);
+}
+
+function rebuildSpherePoints() {
+  spherePoints = [];
+  const total = SPHERE_CONFIG.pointCount;
+
+  for (let i = 0; i < total; i++) {
+    const y = 1 - (i / (total - 1)) * 2;
+    const radius = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = 2.399963229728653 * i;
+    const x = Math.cos(theta) * radius;
+    const z = Math.sin(theta) * radius;
+
+    spherePoints.push({ x, y, z });
+  }
+}
+
+function setupSphereCanvas() {
+  if (!sphereCanvas || !sphereCtx) return;
+
+  const rect = sphereCanvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+
+  sphereCanvas.width = Math.max(1, Math.floor(rect.width * ratio));
+  sphereCanvas.height = Math.max(1, Math.floor(rect.height * ratio));
+
+  sphereCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function projectPoint(p, cx, cy, radius, rotationX, rotationY) {
+  const cosY = Math.cos(rotationY);
+  const sinY = Math.sin(rotationY);
+  const cosX = Math.cos(rotationX);
+  const sinX = Math.sin(rotationX);
+
+  const x1 = p.x * cosY - p.z * sinY;
+  const z1 = p.x * sinY + p.z * cosY;
+  const y1 = p.y * cosX - z1 * sinX;
+  const z2 = p.y * sinX + z1 * cosX;
+
+  const perspective = 1 / (1 + z2 * 0.75);
+
+  return {
+    x: cx + x1 * radius * perspective,
+    y: cy + y1 * radius * perspective,
+    z: z2,
+    perspective
+  };
+}
+
+function drawWireframeSphere(audioLevel, calmFactor, scale, opacity) {
+  if (!sphereCanvas || !sphereCtx || !spherePoints.length) return;
+
+  const width = sphereCanvas.clientWidth;
+  const height = sphereCanvas.clientHeight;
+  if (!width || !height) return;
+
+  sphereCtx.clearRect(0, 0, width, height);
+
+  sphereRotation += 0.003 * calmFactor + audioLevel * 0.02;
+
+  const cx = width / 2;
+  const cy = height / 2;
+  const radius = Math.min(width, height) * 0.36 * scale;
+  const wobble = 1 + Math.sin(pulse * 0.8) * 0.04 + audioLevel * 0.12;
+  const rotationX = sphereRotation * 0.63;
+  const rotationY = sphereRotation;
+
+  const projected = spherePoints.map((p) => {
+    const amp = 1 + audioLevel * 0.18 * Math.sin((p.x + p.y + p.z) * 7 + pulse * 2);
+    return projectPoint(
+      { x: p.x * amp * wobble, y: p.y * amp * wobble, z: p.z * amp * wobble },
+      cx,
+      cy,
+      radius,
+      rotationX,
+      rotationY
+    );
+  });
+
+  sphereCtx.lineWidth = SPHERE_CONFIG.baseLineWidth + audioLevel * 0.9;
+  sphereCtx.strokeStyle = sphereMoodColor;
+  sphereCtx.globalAlpha = Math.max(0.25, Math.min(1, opacity));
+
+  const maxDist = radius * SPHERE_CONFIG.connectionDistance;
+  for (let i = 0; i < projected.length; i++) {
+    const a = projected[i];
+    for (let j = i + 1; j < projected.length; j++) {
+      const b = projected[j];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > maxDist) continue;
+
+      const fade = 1 - dist / maxDist;
+      sphereCtx.globalAlpha = (0.08 + fade * 0.52) * Math.max(0.28, Math.min(1, opacity));
+      sphereCtx.beginPath();
+      sphereCtx.moveTo(a.x, a.y);
+      sphereCtx.lineTo(b.x, b.y);
+      sphereCtx.stroke();
+    }
+  }
+
+  sphereCtx.globalAlpha = 1;
 }
 
 const canvas = document.getElementById("particles");
@@ -375,6 +490,8 @@ function resizeCanvas() {
   canvas.style.width = `${window.innerWidth}px`;
   canvas.style.height = `${window.innerHeight}px`;
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  setupSphereCanvas();
 }
 
 function getViewportScale() {
@@ -403,6 +520,7 @@ function createParticles(count = 60) {
   }
 }
 
+rebuildSpherePoints();
 createParticles();
 resizeCanvas();
 
@@ -562,27 +680,7 @@ async function syncTimeContext(force = false) {
 }
 
 function applyMoodVisuals(mood) {
-  switch (mood) {
-    case "stressed":
-      orb.style.background =
-        "radial-gradient(circle, rgba(255,120,120,0.3), transparent)";
-      break;
-
-    case "tired":
-      orb.style.background =
-        "radial-gradient(circle, rgba(200,160,255,0.2), transparent)";
-      break;
-
-    case "focused":
-      orb.style.background =
-        "radial-gradient(circle, rgba(120,200,255,0.3), transparent)";
-      break;
-
-    case "calm":
-      orb.style.background =
-        "radial-gradient(circle, rgba(180,255,200,0.25), transparent)";
-      break;
-  }
+  sphereMoodColor = SPHERE_MOOD_COLORS[mood] || SPHERE_MOOD_COLORS.calm;
 }
 
 let timerInterval;
@@ -659,9 +757,7 @@ async function onWorkStart() {
   createParticles(40);
 
   background.style.background = BASE_BACKGROUND_GRADIENT;
-
-  orb.style.background =
-    "radial-gradient(circle, rgba(120,200,255,0.3), transparent)";
+  sphereMoodColor = SPHERE_MOOD_COLORS.focused;
 }
 
 async function onBreakStart() {
@@ -678,9 +774,7 @@ async function onBreakStart() {
   createParticles(20);
 
   background.style.background = BASE_BACKGROUND_GRADIENT;
-
-  orb.style.background =
-    "radial-gradient(circle, rgba(200,150,255,0.25), transparent)";
+  sphereMoodColor = SPHERE_MOOD_COLORS.tired;
 }
 
 window.resetFlow = () => {
