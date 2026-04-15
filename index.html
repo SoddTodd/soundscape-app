@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soundscape App</title>
+  <title>LIDU Focus System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -17,44 +17,69 @@
 
     <!-- Top bar -->
     <div id="top">
-      <div id="moods" class="control-row">
-        <button onclick="setMood('stressed', this)">Stress Relief</button>
-        <button onclick="setMood('tired', this)">Sleepy Reset</button>
-        <button onclick="setMood('focused', this)">Focus Boost</button>
-        <button onclick="setMood('calm', this)">Calm Balance</button>
+      <div id="brand" aria-label="LIDU Focus System">
+        <div id="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 41 81" xmlns="http://www.w3.org/2000/svg" width="41" height="81" fill="none" role="img" aria-label="LIDU logo">
+            <rect width="8" height="69" x="0" y="0" rx="4" fill="currentColor" />
+            <rect width="8" height="69" x="33" y="0" rx="4" fill="currentColor" />
+            <rect width="8" height="81" x="11" y="0" rx="4" fill="currentColor" />
+            <rect width="8" height="81" x="22" y="0" rx="4" fill="currentColor" />
+          </svg>
+        </div>
+        <div id="brand-nameplate">
+          LIDU FOCUS SYSTEM
+          <span id="brand-right-link" aria-hidden="true">
+            <span class="brand-link-main"></span>
+            <span class="brand-link-ring"></span>
+            <span class="brand-link-tail"></span>
+            <span class="brand-link-dot"></span>
+          </span>
+        </div>
       </div>
 
-      <div id="textures" class="control-row">
-        <button onclick="setTexture('none', this)">No Texture</button>
-        <button onclick="setTexture('rain', this)">Rain Texture</button>
-        <button onclick="setTexture('ocean', this)">Ocean Texture</button>
-        <button onclick="setTexture('wind', this)">Wind Texture</button>
-        <button onclick="setTexture('cafe', this)">Cafe Ambience</button>
+      <div id="moods" class="control-row diagram-row" style="--row-offset: 20px; --row-gap-before: 4px; --row-shift-x: 0px;">
+        <button class="diagram-node" style="--link-len: 22px;" onclick="setMood('stressed', this)">Stress Relief</button>
+        <button class="diagram-node" style="--link-len: 34px;" onclick="setMood('tired', this)">Sleepy Reset</button>
+        <button class="diagram-node" style="--link-len: 18px;" onclick="setMood('focused', this)">Focus Boost</button>
+        <button class="diagram-node no-link" onclick="setMood('calm', this)">Calm Balance</button>
       </div>
 
-      <div id="modes" class="control-row">
-        <button class="mode-btn" onclick="playMode('deepFocus', this)">Deep Focus</button>
-        <button class="mode-btn" onclick="playMode('flowState', this)">Flow State</button>
-        <button class="mode-btn" onclick="playMode('energyBoost', this)">Energy Boost</button>
-        <button id="binaural-mode-button" class="mode-btn" onclick="playBinaural(this)">Binaural</button>
+      <div id="textures" class="control-row diagram-row" style="--row-offset: 88px; --row-gap-before: 26px; --row-shift-x: 20px; --guide-x: 72px;">
+        <button class="diagram-node" style="--link-len: 28px;" onclick="setTexture('none', this)">No Texture</button>
+        <button class="diagram-node" style="--link-len: 16px;" onclick="setTexture('rain', this)">Rain Texture</button>
+        <button class="diagram-node" style="--link-len: 40px;" onclick="setTexture('ocean', this)">Ocean Texture</button>
+        <button class="diagram-node" style="--link-len: 24px;" onclick="setTexture('wind', this)">Wind Texture</button>
+        <button class="diagram-node no-link" onclick="setTexture('cafe', this)">Cafe Ambience</button>
       </div>
-      <div id="binaural-options" class="control-row" aria-hidden="true">
-        <button class="binaural-option" onclick="setBinaural('focus', this)">Focus</button>
-        <button class="binaural-option" onclick="setBinaural('relax', this)">Relax</button>
-      </div>
-      <div id="binaural-hint" aria-live="polite"></div>
 
-      <div id="tones" class="control-row">
+      <div id="modes" class="control-row diagram-row" style="--row-offset: 132px; --row-gap-before: 18px; --row-shift-x: -44px; --guide-x: 118px;">
+        <button class="mode-btn diagram-node" style="--link-len: 20px;" onclick="playMode('deepFocus', this)">Deep Focus</button>
+        <button class="mode-btn diagram-node" style="--link-len: 30px;" onclick="playMode('flowState', this)">Flow State</button>
+        <button class="mode-btn diagram-node" style="--link-len: 14px;" onclick="playMode('energyBoost', this)">Energy Boost</button>
+        <div id="binaural-anchor" class="diagram-node no-link">
+          <button id="binaural-mode-button" class="mode-btn" onclick="playBinaural(this)">Binaural</button>
+          <div id="binaural-options" class="control-row" aria-hidden="true">
+            <button class="binaural-option" onclick="setBinaural('focus', this)">Focus</button>
+            <button class="binaural-option" onclick="setBinaural('relax', this)">Relax</button>
+          </div>
+          <div id="binaural-hint" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div id="tones" class="control-row diagram-row" style="--row-offset: 176px; --row-gap-before: 28px; --row-shift-x: 0px; --guide-x: 146px;">
         <label for="solfeggio-select">Solfeggio</label>
-        <select id="solfeggio-select" onchange="setSolfeggio(this.value)">
-          <option value="">Select Frequency</option>
-          <option value="solfeggio396">396 Hz</option>
-          <option value="solfeggio417">417 Hz</option>
-          <option value="solfeggio528">528 Hz</option>
-          <option value="solfeggio639">639 Hz</option>
-          <option value="solfeggio741">741 Hz</option>
-          <option value="solfeggio852">852 Hz</option>
-        </select>
+        <div id="solfeggio-stack">
+          <select id="solfeggio-select" onchange="setSolfeggio(this.value)">
+            <option value="">Select Frequency</option>
+            <option value="solfeggio396">396 Hz</option>
+            <option value="solfeggio417">417 Hz</option>
+            <option value="solfeggio528">528 Hz</option>
+            <option value="solfeggio639">639 Hz</option>
+            <option value="solfeggio741">741 Hz</option>
+            <option value="solfeggio852">852 Hz</option>
+          </select>
+          <div id="solfeggio-hint" aria-live="polite">Pick a frequency to see its vibe.</div>
+        </div>
         <div id="solfeggio-mix-control">
           <label for="solfeggio-mix">Blend</label>
           <input
@@ -67,7 +92,6 @@
             oninput="setSolfeggioMix(this.value)"
           >
         </div>
-        <div id="solfeggio-hint" aria-live="polite">Pick a frequency to see its vibe.</div>
       </div>
     </div>
 

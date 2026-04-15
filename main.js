@@ -9,6 +9,7 @@ const vibe = new VibeEngine(audio);
 
 const sphereCanvas = document.getElementById("wireframe-sphere");
 const background = document.getElementById("background");
+const topControls = document.getElementById("top");
 const binauralOptions = document.getElementById("binaural-options");
 const binauralModeButton = document.getElementById("binaural-mode-button");
 const binauralHint = document.getElementById("binaural-hint");
@@ -100,6 +101,10 @@ function showBinauralOptions(show) {
 
   binauralOptions.classList.toggle("visible", show);
   binauralOptions.setAttribute("aria-hidden", show ? "false" : "true");
+
+  if (topControls) {
+    topControls.classList.toggle("binaural-open", show);
+  }
 
   if (binauralHint) {
     binauralHint.classList.toggle("visible", show);
