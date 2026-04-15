@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LIDU Focus System</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260413-18">
+  <link rel="stylesheet" href="style.css?v=20260415-02">
 </head>
 <body>
   <div id="app">
@@ -28,23 +29,17 @@
         </div>
         <div id="brand-nameplate">
           LIDU FOCUS SYSTEM
-          <span id="brand-right-link" aria-hidden="true">
-            <span class="brand-link-main"></span>
-            <span class="brand-link-ring"></span>
-            <span class="brand-link-tail"></span>
-            <span class="brand-link-dot"></span>
-          </span>
         </div>
       </div>
 
-      <div id="moods" class="control-row diagram-row" style="--row-offset: 20px; --row-gap-before: 4px; --row-shift-x: 0px;">
+      <div id="moods" class="control-row diagram-row" style="--row-offset: 20px; --row-gap-before: 18px; --row-shift-x: 0px;">
         <button class="diagram-node" style="--link-len: 22px;" onclick="setMood('stressed', this)">Stress Relief</button>
         <button class="diagram-node" style="--link-len: 34px;" onclick="setMood('tired', this)">Sleepy Reset</button>
         <button class="diagram-node" style="--link-len: 18px;" onclick="setMood('focused', this)">Focus Boost</button>
         <button class="diagram-node no-link" onclick="setMood('calm', this)">Calm Balance</button>
       </div>
 
-      <div id="textures" class="control-row diagram-row" style="--row-offset: 88px; --row-gap-before: 26px; --row-shift-x: 20px; --guide-x: 72px;">
+      <div id="textures" class="control-row diagram-row" style="--row-offset: 88px; --row-gap-before: 34px; --row-shift-x: 20px; --guide-x: 72px;">
         <button class="diagram-node" style="--link-len: 28px;" onclick="setTexture('none', this)">No Texture</button>
         <button class="diagram-node" style="--link-len: 16px;" onclick="setTexture('rain', this)">Rain Texture</button>
         <button class="diagram-node" style="--link-len: 40px;" onclick="setTexture('ocean', this)">Ocean Texture</button>
@@ -52,7 +47,7 @@
         <button class="diagram-node no-link" onclick="setTexture('cafe', this)">Cafe Ambience</button>
       </div>
 
-      <div id="modes" class="control-row diagram-row" style="--row-offset: 132px; --row-gap-before: 18px; --row-shift-x: -44px; --guide-x: 118px;">
+      <div id="modes" class="control-row diagram-row" style="--row-offset: 132px; --row-gap-before: 26px; --row-shift-x: -44px; --guide-x: 118px;">
         <button class="mode-btn diagram-node" style="--link-len: 20px;" onclick="playMode('deepFocus', this)">Deep Focus</button>
         <button class="mode-btn diagram-node" style="--link-len: 30px;" onclick="playMode('flowState', this)">Flow State</button>
         <button class="mode-btn diagram-node" style="--link-len: 14px;" onclick="playMode('energyBoost', this)">Energy Boost</button>
@@ -66,7 +61,7 @@
         </div>
       </div>
 
-      <div id="tones" class="control-row diagram-row" style="--row-offset: 176px; --row-gap-before: 28px; --row-shift-x: 0px; --guide-x: 146px;">
+      <div id="tones" class="control-row diagram-row" style="--row-offset: 176px; --row-gap-before: 36px; --row-shift-x: 0px; --guide-x: 146px;">
         <label for="solfeggio-select">Solfeggio</label>
         <div id="solfeggio-stack">
           <select id="solfeggio-select" onchange="setSolfeggio(this.value)">
@@ -201,6 +196,6 @@
   </div>
 
   <script src="https://unpkg.com/tone"></script>
-  <script type="module" src="main.js?v=20260413-18"></script>
+  <script type="module" src="main.js?v=20260415-02"></script>
 </body>
 </html>

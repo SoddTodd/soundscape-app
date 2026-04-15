@@ -16,7 +16,7 @@ const binauralHint = document.getElementById("binaural-hint");
 const solfeggioSelect = document.getElementById("solfeggio-select");
 const solfeggioMix = document.getElementById("solfeggio-mix");
 const solfeggioHint = document.getElementById("solfeggio-hint");
-const APP_VERSION = "20260413-18";
+const APP_VERSION = "20260415-02";
 const FEEDBACK_ENDPOINT = window.FEEDBACK_ENDPOINT || "";
 const BASE_BACKGROUND_GRADIENT =
   "radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%), radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%), linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%)";
