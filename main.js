@@ -17,7 +17,6 @@ const solfeggioSelect = document.getElementById("solfeggio-select");
 const solfeggioMix = document.getElementById("solfeggio-mix");
 const solfeggioHint = document.getElementById("solfeggio-hint");
 const APP_VERSION = "20260415-02";
-const FEEDBACK_ENDPOINT = window.FEEDBACK_ENDPOINT || "";
 const BASE_BACKGROUND_GRADIENT =
   "radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%), radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%), linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%)";
 const SOLFEGGIO_HINTS = {
@@ -981,117 +980,36 @@ function getCurrentBinauralType() {
   return null;
 }
 
-function setFeedbackStatus(message, isError = false) {
-  const status = document.getElementById("feedback-status");
-  if (!status) return;
+function initFeedbackTracking() {
+  const feedbackDetails = document.getElementById("feedback-details");
+  const feedbackLink = document.getElementById("feedback-tally-link");
 
-  status.textContent = message;
-  status.classList.toggle("error", isError);
-}
-
-window.submitFeedback = async (event) => {
-  if (event) event.preventDefault();
-
-  const typeEl = document.getElementById("feedback-type");
-  const messageEl = document.getElementById("feedback-message");
-  const submitBtn = document.getElementById("feedback-submit-btn");
-
-  if (!typeEl || !messageEl) return false;
-
-  const type = typeEl.value;
-  const message = messageEl.value.trim();
-
-  if (message.length < 6) {
-    setFeedbackStatus("Please add a bit more detail.", true);
-    return false;
-  }
-
-  const payload = {
-    type,
-    message,
-    createdAt: new Date().toISOString(),
-    appVersion: APP_VERSION,
-    context: {
-      mode: vibe.currentMode || null,
-      binauralType: getCurrentBinauralType(),
-      mood: currentMood,
-      intensity,
-      texture: getCurrentTexture(),
-      solfeggioMode: vibe.selectedSolfeggioType || "",
-      solfeggioMix: vibe.solfeggioMix,
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      viewport: {
-        width: window.innerWidth,
-        height: window.innerHeight
-      }
-    }
-  };
-
-  posthog.capture("feedback_submit_attempted", {
-    feedback_type: type,
-    mode: vibe.currentMode || null,
-    mood: currentMood,
-    app_version: APP_VERSION
-  });
-
-  try {
-    if (submitBtn) submitBtn.disabled = true;
-
-    if (!FEEDBACK_ENDPOINT) {
-      const text = JSON.stringify(payload, null, 2);
-      try {
-        await navigator.clipboard.writeText(text);
-        setFeedbackStatus("No endpoint set yet. Payload copied to clipboard.");
-      } catch {
-        setFeedbackStatus("No endpoint set yet. See console payload.");
-      }
-      console.log("[Feedback payload]", payload);
-      posthog.capture("feedback_endpoint_missing", {
-        feedback_type: type,
+  if (feedbackDetails) {
+    feedbackDetails.addEventListener("toggle", () => {
+      if (!feedbackDetails.open) return;
+      posthog.capture("feedback_form_opened", {
+        source: "panel_toggle",
+        app_version: APP_VERSION,
         mode: vibe.currentMode || null,
         mood: currentMood,
-        app_version: APP_VERSION
+        intensity
       });
-      return false;
-    }
-
-    const res = await fetch(FEEDBACK_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
     });
-
-    if (!res.ok) {
-      throw new Error(`Feedback request failed: ${res.status}`);
-    }
-
-    messageEl.value = "";
-    setFeedbackStatus("Thank you. Feedback sent.");
-    posthog.capture("feedback_submitted", {
-      feedback_type: type,
-      mode: vibe.currentMode || null,
-      mood: currentMood,
-      app_version: APP_VERSION
-    });
-  } catch (err) {
-    console.error("[Feedback submit failed]", err);
-    setFeedbackStatus("Could not send right now. Try again in a moment.", true);
-    posthog.capture("feedback_submit_failed", {
-      feedback_type: type,
-      mode: vibe.currentMode || null,
-      mood: currentMood,
-      app_version: APP_VERSION,
-      error: err instanceof Error ? err.message : String(err)
-    });
-  } finally {
-    if (submitBtn) submitBtn.disabled = false;
   }
 
-  return false;
-};
+  if (feedbackLink) {
+    feedbackLink.addEventListener("click", () => {
+      posthog.capture("feedback_form_opened", {
+        source: "cta_click",
+        destination: feedbackLink.href,
+        app_version: APP_VERSION,
+        mode: vibe.currentMode || null,
+        mood: currentMood,
+        intensity
+      });
+    });
+  }
+}
 
 function renderPresets() {
   const container = document.getElementById("presetList");
@@ -1140,4 +1058,5 @@ function renderPresets() {
   });
 }
 
+initFeedbackTracking();
 renderPresets();
