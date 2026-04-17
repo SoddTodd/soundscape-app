@@ -153,6 +153,7 @@ function getBinauralProfile(type) {
 
 async function activateBinauralProfile(type, btn) {
   const profile = getBinauralProfile(type);
+  posthog.capture("binaural_activated", { type, mode: profile.mode });
 
   manualTextureChoice = null;
   currentAutoTextureType = profile.texture;
@@ -181,6 +182,7 @@ window.setMood = (mood, btn) => {
   setActiveButton("#moods > button", btn);
   vibe.applyMood(mood);
   applyMoodVisuals(mood);
+  posthog.capture("mood_selected", { mood, active_mode: vibe.currentMode || null });
 };
 
 window.startApp = async () => {
@@ -198,6 +200,7 @@ window.playMode = async (mode, btn) => {
   await ensureAudioInitialized();
   await vibe.play(mode);
   setActiveButton("#modes .mode-btn", btn);
+  posthog.capture("mode_selected", { mode, mood: currentMood, intensity });
 
   if (!mode.startsWith("binaural")) {
     showBinauralOptions(false);
@@ -235,6 +238,7 @@ window.setSolfeggio = async (mode) => {
 
   vibe.setSolfeggioTone(mode);
   updateSolfeggioHint(mode);
+  posthog.capture("solfeggio_selected", { frequency: mode, active_mode: vibe.currentMode || null });
 };
 
 window.setSolfeggioMix = (value) => {
@@ -245,6 +249,7 @@ window.setSolfeggioMix = (value) => {
 
 window.playRain = async () => {
   await ensureAudioInitialized();
+  posthog.capture("rain_shortcut_activated", { mood: currentMood, intensity });
 
   await vibe.play("flowState"); // or deepFocus
   manualTextureChoice = "rain";
@@ -272,6 +277,7 @@ window.playRain = async () => {
 
 window.playSleep = async () => {
   await ensureAudioInitialized();
+  posthog.capture("sleep_mode_activated", { mood: currentMood, intensity });
 
   await vibe.play("deepSleep");
   manualTextureChoice = "rain";
@@ -300,6 +306,11 @@ window.playSleep = async () => {
 
 window.stopAll = () => {
   clearInterval(timerInterval);
+  posthog.capture("all_sounds_stopped", {
+    mode: vibe.currentMode || null,
+    mood: currentMood,
+    session_seconds: Math.round(getSessionProgress())
+  });
 
   const doStop = () => {
     vibe.stop();
@@ -711,6 +722,7 @@ function updateDisplay() {
 window.startFlow = async () => {
   await ensureAudioInitialized();
   clearInterval(timerInterval);
+  posthog.capture("flow_timer_started", { cycle: flow.cycle, phase: flow.isWork ? "work" : "break", active_mode: vibe.currentMode || null });
 
   timerInterval = setInterval(() => {
     flow.timeLeft--;
@@ -813,6 +825,7 @@ window.setTexture = (type, btn) => {
   manualTextureChoice = type;
   currentAutoTextureType = null;
   setActiveButton("#textures button", btn);
+  posthog.capture("texture_selected", { texture: type, active_mode: vibe.currentMode || null, mood: currentMood });
 
   if (!vibe.current) {
     ensureAudioInitialized().then(() => vibe.playTextureAlone(type));
@@ -885,12 +898,26 @@ window.savePreset = () => {
   };
 
   presets.save(preset);
+  posthog.capture("preset_saved", {
+    preset_name: name,
+    mode,
+    texture: preset.texture,
+    mood: preset.mood,
+    intensity: preset.intensity,
+    solfeggio_mode: preset.solfeggioMode || null
+  });
 
   renderPresets();
 };
 
 window.loadPreset = async (preset) => {
   if (!preset) return;
+  posthog.capture("preset_loaded", {
+    preset_name: preset.name || null,
+    mode: preset.mode || null,
+    texture: preset.texture || null,
+    mood: preset.mood || null
+  });
 
   try {
   if (preset.mode) {
@@ -941,6 +968,9 @@ window.loadPreset = async (preset) => {
 };
 
 window.deletePreset = (index) => {
+  const all = presets.getAll();
+  const deleted = all[index];
+  posthog.capture("preset_deleted", { preset_name: deleted?.name || null, index });
   presets.delete(index);
   renderPresets();
 };
@@ -998,6 +1028,13 @@ window.submitFeedback = async (event) => {
     }
   };
 
+  posthog.capture("feedback_submit_attempted", {
+    feedback_type: type,
+    mode: vibe.currentMode || null,
+    mood: currentMood,
+    app_version: APP_VERSION
+  });
+
   try {
     if (submitBtn) submitBtn.disabled = true;
 
@@ -1010,6 +1047,12 @@ window.submitFeedback = async (event) => {
         setFeedbackStatus("No endpoint set yet. See console payload.");
       }
       console.log("[Feedback payload]", payload);
+      posthog.capture("feedback_endpoint_missing", {
+        feedback_type: type,
+        mode: vibe.currentMode || null,
+        mood: currentMood,
+        app_version: APP_VERSION
+      });
       return false;
     }
 
@@ -1027,9 +1070,22 @@ window.submitFeedback = async (event) => {
 
     messageEl.value = "";
     setFeedbackStatus("Thank you. Feedback sent.");
+    posthog.capture("feedback_submitted", {
+      feedback_type: type,
+      mode: vibe.currentMode || null,
+      mood: currentMood,
+      app_version: APP_VERSION
+    });
   } catch (err) {
     console.error("[Feedback submit failed]", err);
     setFeedbackStatus("Could not send right now. Try again in a moment.", true);
+    posthog.capture("feedback_submit_failed", {
+      feedback_type: type,
+      mode: vibe.currentMode || null,
+      mood: currentMood,
+      app_version: APP_VERSION,
+      error: err instanceof Error ? err.message : String(err)
+    });
   } finally {
     if (submitBtn) submitBtn.disabled = false;
   }
