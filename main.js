@@ -19,12 +19,9 @@ const solfeggioHint = document.getElementById("solfeggio-hint");
 const cookieBanner = document.getElementById("cookie-banner");
 const cookieAcceptBtn = document.getElementById("cookie-accept-btn");
 const cookieDeclineBtn = document.getElementById("cookie-decline-btn");
-const cookieSettingsStatus = document.getElementById("cookie-settings-status");
-const cookieSettingsAcceptBtn = document.getElementById("cookie-settings-accept-btn");
-const cookieSettingsDeclineBtn = document.getElementById("cookie-settings-decline-btn");
 const cookieSettingsReviewBtn = document.getElementById("cookie-settings-review-btn");
 const COOKIE_CONSENT_KEY = "liduCookieConsent";
-const APP_VERSION = "20260415-02";
+const APP_VERSION = "20260419-01";
 const BASE_BACKGROUND_GRADIENT =
   "radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%), radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%), linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%)";
 const SOLFEGGIO_HINTS = {
@@ -1045,53 +1042,56 @@ function disableAnalyticsCookies() {
 function hideCookieBanner() {
   if (!cookieBanner) return;
   cookieBanner.hidden = true;
+  cookieBanner.style.display = "none";
 }
 
 function showCookieBanner() {
   if (!cookieBanner) return;
   cookieBanner.hidden = false;
+  cookieBanner.style.display = "";
 }
 
-function updateCookieSettingsStatus(consent) {
-  if (!cookieSettingsStatus) return;
+function readCookieConsent() {
+  try {
+    return localStorage.getItem(COOKIE_CONSENT_KEY);
+  } catch {
+    return null;
+  }
+}
 
-  if (consent === "accepted") {
-    cookieSettingsStatus.textContent = "Analytics cookies: allowed.";
-  } else if (consent === "declined") {
-    cookieSettingsStatus.textContent = "Analytics cookies: declined.";
-  } else {
-    cookieSettingsStatus.textContent = "Analytics cookies: not set.";
+function writeCookieConsent(consent) {
+  try {
+    localStorage.setItem(COOKIE_CONSENT_KEY, consent);
+  } catch {
+    // If storage is unavailable (privacy mode / blocked storage),
+    // keep the UI responsive and still apply the current session choice.
   }
 }
 
 function applyCookieConsent(consent) {
-  localStorage.setItem(COOKIE_CONSENT_KEY, consent);
+  // Dismiss first so button taps always close the banner immediately.
+  hideCookieBanner();
+  writeCookieConsent(consent);
 
   if (consent === "accepted") {
     enableAnalyticsCookies();
   } else {
     disableAnalyticsCookies();
   }
-
-  hideCookieBanner();
-  updateCookieSettingsStatus(consent);
 }
 
 function initCookieConsent() {
-  const saved = localStorage.getItem(COOKIE_CONSENT_KEY);
+  const saved = readCookieConsent();
 
   if (saved === "accepted") {
     enableAnalyticsCookies();
     hideCookieBanner();
-    updateCookieSettingsStatus("accepted");
   } else if (saved === "declined") {
     disableAnalyticsCookies();
     hideCookieBanner();
-    updateCookieSettingsStatus("declined");
   } else {
     disableAnalyticsCookies();
     showCookieBanner();
-    updateCookieSettingsStatus("unset");
   }
 
   if (cookieAcceptBtn) {
@@ -1102,18 +1102,6 @@ function initCookieConsent() {
 
   if (cookieDeclineBtn) {
     cookieDeclineBtn.addEventListener("click", () => {
-      applyCookieConsent("declined");
-    });
-  }
-
-  if (cookieSettingsAcceptBtn) {
-    cookieSettingsAcceptBtn.addEventListener("click", () => {
-      applyCookieConsent("accepted");
-    });
-  }
-
-  if (cookieSettingsDeclineBtn) {
-    cookieSettingsDeclineBtn.addEventListener("click", () => {
       applyCookieConsent("declined");
     });
   }
