@@ -563,9 +563,9 @@ setTexture(type, rememberSelection = true) {
   }
 
   const textureMap = {
-    rain: [{ url: "./assets/sounds/rain.mp3", volume: -20, offset: 0, gain: 1 }],
+    rain: [{ url: "./assets/sounds/rain.ogg", volume: -20, offset: 0, gain: 1 }],
     ocean: [{ url: "./assets/sounds/ocean.mp3", volume: -18, offset: 0, gain: 1 }],
-    wind: [{ url: "./assets/sounds/wind.mp3", volume: -22, offset: 0, gain: 1 }],
+    wind: [{ url: "./assets/sounds/wind.ogg", volume: -22, offset: 0, gain: 1 }],
     cafe: [{ url: "./assets/sounds/cafe.mp3", volume: -24, offset: 0, gain: 1 }],
   };
 

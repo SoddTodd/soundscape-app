@@ -13,7 +13,9 @@
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init me ws ys zs Ds Es capture Ne Se calculateEventProperties getFeatureFlag getFeatureFlagPayload getRemoteConfig isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onRemoteConfig onSurveysLoaded getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug ready".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     posthog.init(window.POSTHOG_PROJECT_TOKEN || 'phc_A6ZWEX7vYCvwYYgWTsTPEKTceuRX4PBUhj9N3UU2Dfku', {
       api_host: window.POSTHOG_HOST || 'https://eu.i.posthog.com',
-      person_profiles: 'identified_only'
+      person_profiles: 'identified_only',
+      opt_out_capturing_by_default: true,
+      persistence: 'memory'
     });
   </script>
 </head>
@@ -37,6 +39,7 @@
         <div id="brand-nameplate">
           LIDU FOCUS SYSTEM
         </div>
+        <div id="beta-pill" aria-label="Public beta version">Public Beta</div>
       </div>
 
       <div id="moods" class="control-row diagram-row" style="--row-offset: 20px; --row-gap-before: 18px; --row-shift-x: 0px;">
@@ -130,6 +133,7 @@
       <div class="definition-panel" id="feedback-panel" aria-label="Feedback">
         <details id="feedback-details">
           <summary>Feedback & Feature Request</summary>
+          <p id="beta-note">You are using the public beta. Features and sound balances can change as we collect feedback.</p>
           <div id="feedback-form" aria-live="polite">
             <a
               id="feedback-tally-link"
@@ -188,8 +192,32 @@
         <p><strong>639/741/852 Hz:</strong> Progressively clearer and brighter upper-band character.</p>
       </div>
 
+      <div class="definition-panel" id="cookie-settings-panel" aria-label="Privacy and cookie settings">
+        <h3>Privacy & Cookies</h3>
+        <p id="cookie-settings-status">Analytics cookies: not set.</p>
+        <div id="cookie-settings-actions">
+          <button id="cookie-settings-accept-btn" type="button">Allow analytics</button>
+          <button id="cookie-settings-decline-btn" type="button">Decline analytics</button>
+        </div>
+        <button id="cookie-settings-review-btn" type="button">Review cookie choice</button>
+        <p id="cookie-settings-link">
+          <a href="privacy.html" target="_blank" rel="noopener noreferrer">Read Privacy Policy</a>
+        </p>
+      </div>
+
     </div>
 
+  </div>
+
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie notice" hidden>
+    <p>
+      We use essential storage and optional analytics cookies (PostHog) to improve this beta experience.
+      <a href="privacy.html" target="_blank" rel="noopener noreferrer">Read Privacy Policy</a>
+    </p>
+    <div id="cookie-actions">
+      <button id="cookie-accept-btn" type="button">Allow analytics</button>
+      <button id="cookie-decline-btn" type="button">Decline analytics</button>
+    </div>
   </div>
 
   <script src="https://unpkg.com/tone"></script>

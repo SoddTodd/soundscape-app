@@ -16,6 +16,14 @@ const binauralHint = document.getElementById("binaural-hint");
 const solfeggioSelect = document.getElementById("solfeggio-select");
 const solfeggioMix = document.getElementById("solfeggio-mix");
 const solfeggioHint = document.getElementById("solfeggio-hint");
+const cookieBanner = document.getElementById("cookie-banner");
+const cookieAcceptBtn = document.getElementById("cookie-accept-btn");
+const cookieDeclineBtn = document.getElementById("cookie-decline-btn");
+const cookieSettingsStatus = document.getElementById("cookie-settings-status");
+const cookieSettingsAcceptBtn = document.getElementById("cookie-settings-accept-btn");
+const cookieSettingsDeclineBtn = document.getElementById("cookie-settings-decline-btn");
+const cookieSettingsReviewBtn = document.getElementById("cookie-settings-review-btn");
+const COOKIE_CONSENT_KEY = "liduCookieConsent";
 const APP_VERSION = "20260415-02";
 const BASE_BACKGROUND_GRADIENT =
   "radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%), radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%), linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%)";
@@ -1011,6 +1019,113 @@ function initFeedbackTracking() {
   }
 }
 
+function getPosthog() {
+  if (typeof window === "undefined") return null;
+  if (!window.posthog || typeof window.posthog.set_config !== "function") return null;
+  return window.posthog;
+}
+
+function enableAnalyticsCookies() {
+  const ph = getPosthog();
+  if (!ph) return;
+
+  ph.set_config({ persistence: "localStorage+cookie" });
+  ph.opt_in_capturing();
+  ph.capture("cookie_consent_updated", { consent: "accepted", app_version: APP_VERSION });
+}
+
+function disableAnalyticsCookies() {
+  const ph = getPosthog();
+  if (!ph) return;
+
+  ph.opt_out_capturing();
+  ph.set_config({ persistence: "memory" });
+}
+
+function hideCookieBanner() {
+  if (!cookieBanner) return;
+  cookieBanner.hidden = true;
+}
+
+function showCookieBanner() {
+  if (!cookieBanner) return;
+  cookieBanner.hidden = false;
+}
+
+function updateCookieSettingsStatus(consent) {
+  if (!cookieSettingsStatus) return;
+
+  if (consent === "accepted") {
+    cookieSettingsStatus.textContent = "Analytics cookies: allowed.";
+  } else if (consent === "declined") {
+    cookieSettingsStatus.textContent = "Analytics cookies: declined.";
+  } else {
+    cookieSettingsStatus.textContent = "Analytics cookies: not set.";
+  }
+}
+
+function applyCookieConsent(consent) {
+  localStorage.setItem(COOKIE_CONSENT_KEY, consent);
+
+  if (consent === "accepted") {
+    enableAnalyticsCookies();
+  } else {
+    disableAnalyticsCookies();
+  }
+
+  hideCookieBanner();
+  updateCookieSettingsStatus(consent);
+}
+
+function initCookieConsent() {
+  const saved = localStorage.getItem(COOKIE_CONSENT_KEY);
+
+  if (saved === "accepted") {
+    enableAnalyticsCookies();
+    hideCookieBanner();
+    updateCookieSettingsStatus("accepted");
+  } else if (saved === "declined") {
+    disableAnalyticsCookies();
+    hideCookieBanner();
+    updateCookieSettingsStatus("declined");
+  } else {
+    disableAnalyticsCookies();
+    showCookieBanner();
+    updateCookieSettingsStatus("unset");
+  }
+
+  if (cookieAcceptBtn) {
+    cookieAcceptBtn.addEventListener("click", () => {
+      applyCookieConsent("accepted");
+    });
+  }
+
+  if (cookieDeclineBtn) {
+    cookieDeclineBtn.addEventListener("click", () => {
+      applyCookieConsent("declined");
+    });
+  }
+
+  if (cookieSettingsAcceptBtn) {
+    cookieSettingsAcceptBtn.addEventListener("click", () => {
+      applyCookieConsent("accepted");
+    });
+  }
+
+  if (cookieSettingsDeclineBtn) {
+    cookieSettingsDeclineBtn.addEventListener("click", () => {
+      applyCookieConsent("declined");
+    });
+  }
+
+  if (cookieSettingsReviewBtn) {
+    cookieSettingsReviewBtn.addEventListener("click", () => {
+      showCookieBanner();
+      if (cookieAcceptBtn) cookieAcceptBtn.focus();
+    });
+  }
+}
+
 function renderPresets() {
   const container = document.getElementById("presetList");
   if (!container) return;
@@ -1060,3 +1175,4 @@ function renderPresets() {
 
 initFeedbackTracking();
 renderPresets();
+initCookieConsent();

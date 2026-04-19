@@ -4,7 +4,7 @@ export const vibes = {
 
     texture: {
       type: "rain",
-      url: "./assets/sounds/rain.mp3",
+      url: "./assets/sounds/rain.ogg",
       volume: -15
     },
 
