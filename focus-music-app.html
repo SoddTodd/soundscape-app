@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Focus Music App | Best Focus Music & Ambient Soundscapes</title>
+  <meta name="description" content="Discover the best free focus music app with ambient soundscapes, binaural beats, and pomodoro timer. Boost concentration with rain sounds, Solfeggio frequencies, and personalized focus modes.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://lidu-system.de/focus-music-app.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LIDU Focus System">
+  <meta property="og:title" content="Free Focus Music App | LIDU Focus System">
+  <meta property="og:description" content="The best free focus music app with binaural beats, ambient textures, and Solfeggio overlays. Start your first session today.">
+  <meta property="og:url" content="https://lidu-system.de/focus-music-app.html">
+  <meta property="og:image" content="https://lidu-system.de/favicon.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Free Focus Music App | LIDU Focus System">
+  <meta name="twitter:description" content="Best free focus music app with ambient soundscapes and pomodoro timer.">
+  <meta name="twitter:image" content="https://lidu-system.de/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #062f8a;
+      --bg-deep: #05286f;
+      --panel: rgba(11, 22, 48, 0.78);
+      --text: #ffffff;
+      --muted: rgba(232, 241, 255, 0.8);
+      --accent: #f4721e;
+      --border: rgba(255, 255, 255, 0.3);
+      --grid-fine: rgba(214, 230, 255, 0.07);
+      --grid-major: rgba(239, 246, 255, 0.18);
+      --font: 'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%),
+        linear-gradient(165deg, #0a44b2 0%, var(--bg) 48%, var(--bg-deep) 100%);
+      padding: 28px 16px 34px;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle at 50% 45%, transparent 42%, rgba(2, 13, 38, 0.25) 100%);
+    }
+
+    body::after {
+      background-image:
+        linear-gradient(var(--grid-fine) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-fine) 1px, transparent 1px),
+        linear-gradient(var(--grid-major) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+      background-size: 12px 12px, 12px 12px, 72px 72px, 72px 72px;
+      background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+    }
+
+    main {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 32px 24px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 36px);
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 16px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    p,
+    li {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: #ffd8bd;
+      text-decoration: none;
+      border-bottom: 1px solid #ffd8bd;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .cta-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: var(--accent);
+      color: var(--bg);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      border-bottom: none;
+      transition: all 0.2s ease;
+    }
+
+    .cta-button:hover {
+      background-color: #ffb367;
+      color: var(--bg-deep);
+    }
+
+    .intro {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 28px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+    }
+  </style>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "LIDU Focus System - Focus Music App",
+      "url": "https://lidu-system.de/focus-music-app.html",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Free focus music app with ambient soundscapes, binaural beats, and pomodoro timer.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main>
+    <h1>The Best Free Focus Music App for Deep Work</h1>
+    <p class="intro">
+      Looking for the perfect focus music app? LIDU Focus System combines scientifically-designed ambient soundscapes, binaural beats, and Solfeggio frequencies to help you achieve deep focus, reduce stress, and boost productivity. Start your first session today—no signup required.
+    </p>
+
+    <h2>Why Focus Music Matters</h2>
+    <p>
+      Focus music isn't just background noise—it's a powerful tool that helps your brain enter a state of flow. The right ambient soundscape can mask distracting environmental noise, reduce mental fatigue, and enhance concentration for studying, coding, writing, or creative work.
+    </p>
+
+    <h2>What Makes LIDU Different</h2>
+    <ul>
+      <li><strong>Mood-Based Profiles:</strong> Choose from Stress Relief, Sleepy Reset, Focus Boost, or Calm Balance based on your current state.</li>
+      <li><strong>Ambient Textures:</strong> Layer rain sounds, ocean waves, wind, or cafe ambience to customize your soundscape.</li>
+      <li><strong>Binaural Beats:</strong> Experience the power of frequency-based focus enhancement for deeper concentration or relaxation.</li>
+      <li><strong>Solfeggio Frequencies:</strong> Access six healing frequencies (396–852 Hz) blended with your chosen focus mode.</li>
+      <li><strong>Pomodoro Timer:</strong> Built-in 25-minute focus cycles with automatic transitions to rest phases.</li>
+      <li><strong>Real-Time Intensity Control:</strong> Adjust the soundscape intensity on the fly to match your energy level.</li>
+    </ul>
+
+    <h2>Focus Music for Every Use Case</h2>
+    <p><strong>For Students:</strong> Rain sounds + Deep Focus mode + Solfeggio 528 Hz = locked-in study sessions.</p>
+    <p><strong>For Coders:</strong> Flow State mode + Cafe Ambience + Intensity slider to manage mental energy during debugging.</p>
+    <p><strong>For Writers:</strong> Sleepy Reset + Ocean Texture for creative flow without overthinking.</p>
+    <p><strong>For Anyone Stressed:</strong> Stress Relief profile + Wind Texture + Binaural Relax mode for instant calm.</p>
+
+    <h2>How to Get Started</h2>
+    <p>
+      LIDU Focus System is free, browser-based, and requires no installation or account creation. Simply select your mood, choose a texture, pick a focus mode, and hit Start Timer. Your presets are saved locally, so your favorite combinations are always one click away.
+    </p>
+
+    <p>
+      Unlike other focus music apps that charge subscriptions or require constant notifications, LIDU is lightweight and distraction-free. It works offline once loaded, and respects your privacy with optional analytics.
+    </p>
+
+    <h2>Ready to Focus?</h2>
+    <p>
+      Stop fighting distractions. Start using focus music that actually works. Try LIDU Focus System today and join thousands discovering the power of intentional soundscapes.
+    </p>
+
+    <a href="/" class="cta-button">Launch Focus Music App</a>
+    <p style="margin-top: 24px; font-size: 12px; color: rgba(232, 241, 255, 0.6);">
+      Questions? <a href="privacy.html">Read our privacy policy</a> or <a href="/" style="border-bottom-color: rgba(255, 216, 189, 0.6);">start your session</a>.
+    </p>
+
+    <a class="back-link" href="/">← Back to app</a>
+  </main>
+</body>
+</html>

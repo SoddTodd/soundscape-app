@@ -436,6 +436,16 @@ button.active {
   font-family: var(--font-mono);
 }
 
+.definition-panel a {
+  font-size: 11px;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+
+.definition-panel a:hover {
+  color: var(--color-accent);
+}
+
 input[type=range] {
   appearance: none;
   height: 4px;
