@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binaural Beats for Focus | Free Browser-Based Focus Sessions</title>
+  <meta name="description" content="Use binaural beats for focus with LIDU Focus System. Learn how focus beats work, choose the right session style, and start free concentration sessions directly in your browser.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://lidu-system.de/binaural-beats-focus.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LIDU Focus System">
+  <meta property="og:title" content="Binaural Beats for Focus | LIDU Focus System">
+  <meta property="og:description" content="Free binaural beats for focus in your browser, with ambient textures and session timer support.">
+  <meta property="og:url" content="https://lidu-system.de/binaural-beats-focus.html">
+  <meta property="og:image" content="https://lidu-system.de/favicon.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Binaural Beats for Focus | LIDU Focus System">
+  <meta name="twitter:description" content="Start free focus sessions with binaural beats and ambient soundscapes.">
+  <meta name="twitter:image" content="https://lidu-system.de/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #062f8a;
+      --bg-deep: #05286f;
+      --panel: rgba(11, 22, 48, 0.78);
+      --text: #ffffff;
+      --muted: rgba(232, 241, 255, 0.8);
+      --accent: #f4721e;
+      --border: rgba(255, 255, 255, 0.3);
+      --grid-fine: rgba(214, 230, 255, 0.07);
+      --grid-major: rgba(239, 246, 255, 0.18);
+      --font: 'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%),
+        linear-gradient(165deg, #0a44b2 0%, var(--bg) 48%, var(--bg-deep) 100%);
+      padding: 28px 16px 34px;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle at 50% 45%, transparent 42%, rgba(2, 13, 38, 0.25) 100%);
+    }
+
+    body::after {
+      background-image:
+        linear-gradient(var(--grid-fine) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-fine) 1px, transparent 1px),
+        linear-gradient(var(--grid-major) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+      background-size: 12px 12px, 12px 12px, 72px 72px, 72px 72px;
+      background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+    }
+
+    main {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 32px 24px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 36px);
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 16px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 14px;
+      color: #ffd8bd;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    p,
+    li {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    a {
+      color: #ffd8bd;
+      text-decoration: none;
+      border-bottom: 1px solid #ffd8bd;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .cta-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: var(--accent);
+      color: var(--bg);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      border-bottom: none;
+      transition: all 0.2s ease;
+    }
+
+    .cta-button:hover {
+      background-color: #ffb367;
+      color: var(--bg-deep);
+    }
+
+    .intro {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    .faq {
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 12px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 28px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+    }
+  </style>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "LIDU Focus System",
+          "url": "https://lidu-system.de/binaural-beats-focus.html",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "Web Browser",
+          "description": "Free binaural beats for focus with ambient soundscape controls.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Do binaural beats actually help focus?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Many users find binaural beats useful for concentration, especially when combined with a distraction-free workspace and a session timer."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the best session length for focus beats?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A 25-minute focus block is a practical starting point. You can run multiple cycles with short breaks between them."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  </script>
+</head>
+<body>
+  <main>
+    <h1>Binaural Beats for Focus in Your Browser</h1>
+    <p class="intro">
+      If you are searching for binaural beats for focus, LIDU Focus System gives you a simple and practical setup: choose a focus beat, blend ambient textures, and run timed work blocks without extra setup.
+    </p>
+
+    <h2>How Binaural Focus Sessions Work</h2>
+    <p>
+      Binaural beats are created when each ear hears a slightly different tone. Your brain processes the difference as a rhythmic beat sensation. In practice, many people use this method to maintain attention during study, coding, writing, and deep work.
+    </p>
+    <p>
+      LIDU lets you combine this with rain, wind, ocean, or cafe ambience, so your focus environment feels stable and less fatiguing over longer sessions.
+    </p>
+
+    <h2>Suggested Setup for Deep Work</h2>
+    <ul>
+      <li>Start with Binaural Focus mode and keep intensity at a moderate level.</li>
+      <li>Add one ambient texture to mask distracting sounds around you.</li>
+      <li>Run a 25-minute focus block, then take a short reset break.</li>
+      <li>Repeat for 2 to 4 cycles, depending on your energy level.</li>
+    </ul>
+
+    <h2>When to Use Binaural Relax Instead</h2>
+    <p>
+      If your mind feels overloaded or anxious, switch to Binaural Relax for a lower-pressure session. You can then transition back to focus mode when your attention stabilizes.
+    </p>
+
+    <h2>FAQ</h2>
+    <div class="faq">
+      <h3>Do binaural beats actually help focus?</h3>
+      <p>
+        Many people report better concentration when binaural beats are paired with clear goals, a timer, and fewer notifications.
+      </p>
+
+      <h3>What is the best session length?</h3>
+      <p>
+        Start with 25 minutes and adjust after a week of use. Short, repeatable sessions usually perform better than long, inconsistent ones.
+      </p>
+    </div>
+
+    <h2>Related Guides</h2>
+    <p>
+      New to focus audio? Read the <a href="focus-music-app.html">Focus Music App Guide</a> for a full overview, or go straight to the <a href="/">main app</a> and start your session now.
+    </p>
+
+    <a href="/" class="cta-button">Start Binaural Focus Session</a>
+    <p style="margin-top: 24px; font-size: 12px; color: rgba(232, 241, 255, 0.6);">
+      Need help? Email <a href="mailto:hello@lidu-system.de">hello@lidu-system.de</a>.
+    </p>
+
+    <a class="back-link" href="/">Back to app</a>
+  </main>
+</body>
+</html>

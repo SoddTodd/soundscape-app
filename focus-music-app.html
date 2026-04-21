@@ -168,21 +168,59 @@
       letter-spacing: 0.06em;
       font-size: 12px;
     }
+
+    .faq {
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 12px;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 14px;
+      color: #ffd8bd;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
   </style>
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "LIDU Focus System - Focus Music App",
-      "url": "https://lidu-system.de/focus-music-app.html",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web Browser",
-      "description": "Free focus music app with ambient soundscapes, binaural beats, and pomodoro timer.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      }
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "LIDU Focus System - Focus Music App",
+          "url": "https://lidu-system.de/focus-music-app.html",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "Web Browser",
+          "description": "Free focus music app with ambient soundscapes, binaural beats, and pomodoro timer.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is the best focus music app setup for beginners?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Start with one ambient texture, a moderate intensity level, and a 25-minute focus timer. Keep the setup simple for your first week."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I combine focus music with binaural beats?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. LIDU allows binaural mode with other sound layers so you can tune the session to your preferred concentration style."
+              }
+            }
+          ]
+        }
+      ]
     }
   </script>
 </head>
@@ -230,6 +268,24 @@
     <h2>Ready to Focus?</h2>
     <p>
       Stop fighting distractions. Start using focus music that actually works. Try LIDU Focus System today and join thousands discovering the power of intentional soundscapes.
+    </p>
+
+    <h2>FAQ</h2>
+    <div class="faq">
+      <h3>What is the best focus music setup for beginners?</h3>
+      <p>
+        Use one ambient layer, keep intensity moderate, and run 25-minute blocks. Consistency matters more than complex mixes.
+      </p>
+
+      <h3>Can I combine focus music with binaural beats?</h3>
+      <p>
+        Yes. You can blend focus layers with binaural mode and adjust intensity to avoid fatigue during long sessions.
+      </p>
+    </div>
+
+    <h2>Related Guides</h2>
+    <p>
+      Want a binaural-first workflow? Read the <a href="binaural-beats-focus.html">Binaural Beats for Focus Guide</a> or return to the <a href="/">main app</a>.
     </p>
 
     <a href="/" class="cta-button">Launch Focus Music App</a>
