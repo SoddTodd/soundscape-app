@@ -137,6 +137,7 @@
         <div id="phase">Focus • Cycle 1</div>
         <div id="time">25:00</div>
       </div>
+      <div id="phase-toast" role="status" aria-live="polite"></div>
     </div>
 
     <!-- Bottom controls -->
@@ -144,6 +145,18 @@
       <button onclick="startFlow()">Start Timer</button>
       <button onclick="stopAll()">Stop</button>
       <button onclick="resetFlow()">Reset</button>
+      <button onclick="skipPhase()">Skip phase</button>
+
+      <div id="timer-options" aria-label="Timer reminders">
+        <label for="phase-chime-toggle">
+          <input id="phase-chime-toggle" type="checkbox" checked>
+          Phase chime
+        </label>
+        <label for="pause-on-break-toggle">
+          <input id="pause-on-break-toggle" type="checkbox" checked>
+          Pause audio on break
+        </label>
+      </div>
 
       <div id="intensity-control">
         <label for="intensity-slider">Intensity</label>
@@ -215,6 +228,9 @@
         <p><strong>Start Timer:</strong> Begin a 25-minute Pomodoro focus cycle with auto-transitions.</p>
         <p><strong>Stop:</strong> Fade out all active sounds immediately.</p>
         <p><strong>Reset:</strong> Return timer to default state (25 min focus, Cycle 1).</p>
+        <p><strong>Skip phase:</strong> Jump directly to the next focus/break block when plans change.</p>
+        <p><strong>Phase Chime:</strong> Play a soft cue at every phase transition.</p>
+        <p><strong>Pause audio on break:</strong> Silence the soundscape during breaks, then resume work mode automatically.</p>
         <p><strong>Intensity Slider:</strong> Adjust volume and movement of the soundscape in real-time.</p>
       </div>
 

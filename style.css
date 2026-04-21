@@ -369,6 +369,28 @@ button.active {
   color: var(--color-text);
 }
 
+#phase-toast {
+  position: absolute;
+  left: 50%;
+  bottom: -48px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(8, 38, 107, 0.78);
+  color: #ffffff;
+  padding: 6px 10px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#phase-toast.visible {
+  opacity: 1;
+}
+
 #bottom {
   grid-column: 1;
   grid-row: 3;
@@ -382,6 +404,31 @@ button.active {
   display: inline-block;
   margin-left: 20px;
   vertical-align: middle;
+}
+
+#timer-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 18px;
+  vertical-align: middle;
+  color: var(--color-dim);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+#timer-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+#timer-options input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-accent);
 }
 
 #intensity-control label {
@@ -777,6 +824,22 @@ input[type=range]::-webkit-slider-thumb {
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
+  }
+
+  #timer-options {
+    margin-left: 0;
+    flex-direction: column;
+    gap: 8px;
+    width: min(100%, 320px);
+    align-items: flex-start;
+  }
+
+  #phase-toast {
+    position: static;
+    margin-top: 8px;
+    transform: none;
+    white-space: normal;
+    text-align: center;
   }
 
   #intensity-control {

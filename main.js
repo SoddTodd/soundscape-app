@@ -16,11 +16,15 @@ const binauralHint = document.getElementById("binaural-hint");
 const solfeggioSelect = document.getElementById("solfeggio-select");
 const solfeggioMix = document.getElementById("solfeggio-mix");
 const solfeggioHint = document.getElementById("solfeggio-hint");
+const phaseToast = document.getElementById("phase-toast");
+const phaseChimeToggle = document.getElementById("phase-chime-toggle");
+const pauseOnBreakToggle = document.getElementById("pause-on-break-toggle");
 const cookieBanner = document.getElementById("cookie-banner");
 const cookieAcceptBtn = document.getElementById("cookie-accept-btn");
 const cookieDeclineBtn = document.getElementById("cookie-decline-btn");
 const cookieSettingsReviewBtn = document.getElementById("cookie-settings-review-btn");
 const COOKIE_CONSENT_KEY = "liduCookieConsent";
+const TIMER_SETTINGS_KEY = "liduTimerSettings";
 const APP_VERSION = "20260419-01";
 const BASE_BACKGROUND_GRADIENT =
   "radial-gradient(circle at 18% 12%, rgba(178, 207, 255, 0.16), transparent 30%), radial-gradient(circle at 82% 86%, rgba(124, 169, 255, 0.12), transparent 34%), linear-gradient(165deg, #0a44b2 0%, #062f8a 48%, #05286f 100%)";
@@ -60,6 +64,14 @@ let lastTimeContext = null;
 let currentParticleBaseCount = 60;
 let manualTextureChoice = null;
 let currentAutoTextureType = null;
+let phaseToastHideTimeout = null;
+let phaseChimeSynth = null;
+let isPhaseTransitioning = false;
+let preferredWorkMode = "deepFocus";
+let timerSettings = {
+  phaseChimeEnabled: true,
+  pauseOnBreak: true
+};
 
 async function ensureAudioInitialized() {
   if (isAudioInitialized) return;
@@ -158,6 +170,7 @@ function getBinauralProfile(type) {
 async function activateBinauralProfile(type, btn) {
   const profile = getBinauralProfile(type);
   posthog.capture("binaural_activated", { type, mode: profile.mode });
+  preferredWorkMode = profile.mode;
 
   manualTextureChoice = null;
   currentAutoTextureType = profile.texture;
@@ -204,6 +217,9 @@ window.playMode = async (mode, btn) => {
   await ensureAudioInitialized();
   await vibe.play(mode);
   setActiveButton("#modes .mode-btn", btn);
+  if (mode !== "deepSleep") {
+    preferredWorkMode = mode;
+  }
   posthog.capture("mode_selected", { mode, mood: currentMood, intensity });
 
   if (!mode.startsWith("binaural")) {
@@ -703,6 +719,121 @@ function applyMoodVisuals(mood) {
   sphereMoodColor = SPHERE_MOOD_COLORS[mood] || SPHERE_MOOD_COLORS.calm;
 }
 
+function readTimerSettings() {
+  try {
+    const saved = localStorage.getItem(TIMER_SETTINGS_KEY);
+    if (!saved) return;
+
+    const parsed = JSON.parse(saved);
+    if (typeof parsed.phaseChimeEnabled === "boolean") {
+      timerSettings.phaseChimeEnabled = parsed.phaseChimeEnabled;
+    }
+    if (typeof parsed.pauseOnBreak === "boolean") {
+      timerSettings.pauseOnBreak = parsed.pauseOnBreak;
+    }
+  } catch {
+    // Ignore malformed local settings and continue with defaults.
+  }
+}
+
+function writeTimerSettings() {
+  try {
+    localStorage.setItem(TIMER_SETTINGS_KEY, JSON.stringify(timerSettings));
+  } catch {
+    // Ignore storage failures (private mode, blocked storage, etc.)
+  }
+}
+
+function initTimerSettingsUI() {
+  readTimerSettings();
+
+  if (phaseChimeToggle) {
+    phaseChimeToggle.checked = timerSettings.phaseChimeEnabled;
+    phaseChimeToggle.addEventListener("change", (event) => {
+      timerSettings.phaseChimeEnabled = Boolean(event.target?.checked);
+      writeTimerSettings();
+    });
+  }
+
+  if (pauseOnBreakToggle) {
+    pauseOnBreakToggle.checked = timerSettings.pauseOnBreak;
+    pauseOnBreakToggle.addEventListener("change", (event) => {
+      timerSettings.pauseOnBreak = Boolean(event.target?.checked);
+      writeTimerSettings();
+    });
+  }
+}
+
+function showPhaseToast(message) {
+  if (!phaseToast) return;
+
+  phaseToast.textContent = message;
+  phaseToast.classList.add("visible");
+
+  if (phaseToastHideTimeout) {
+    clearTimeout(phaseToastHideTimeout);
+  }
+
+  phaseToastHideTimeout = setTimeout(() => {
+    phaseToast.classList.remove("visible");
+  }, 2800);
+}
+
+async function playPhaseChime() {
+  if (!timerSettings.phaseChimeEnabled || typeof Tone === "undefined") return;
+
+  try {
+    if (Tone.context.state !== "running") {
+      await Tone.start();
+    }
+
+    if (!phaseChimeSynth) {
+      phaseChimeSynth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: "sine" },
+        envelope: {
+          attack: 0.005,
+          decay: 0.14,
+          sustain: 0.05,
+          release: 0.4
+        }
+      }).toDestination();
+      phaseChimeSynth.volume.value = -15;
+    }
+
+    const now = Tone.now();
+    phaseChimeSynth.triggerAttackRelease("E5", "8n", now, 0.25);
+    phaseChimeSynth.triggerAttackRelease("G5", "8n", now + 0.18, 0.22);
+    phaseChimeSynth.triggerAttackRelease("C6", "8n", now + 0.36, 0.2);
+  } catch (error) {
+    console.warn("Phase chime failed", error);
+  }
+}
+
+async function notifyPhaseChange(message) {
+  showPhaseToast(message);
+
+  if (timerSettings.phaseChimeEnabled) {
+    await playPhaseChime();
+  }
+
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+    try {
+      new Notification("LIDU Timer", { body: message, silent: true });
+    } catch {
+      // Ignore notification failures.
+    }
+  }
+}
+
+function requestNotificationPermissionIfNeeded() {
+  if (typeof Notification === "undefined") return;
+  if (Notification.permission !== "default") return;
+
+  Notification.requestPermission().catch(() => {
+    // Keep app silent if browser blocks the permission API.
+  });
+}
+
 let timerInterval;
 
 let flow = {
@@ -725,20 +856,24 @@ function updateDisplay() {
 
 window.startFlow = async () => {
   await ensureAudioInitialized();
+  requestNotificationPermissionIfNeeded();
   clearInterval(timerInterval);
+  isPhaseTransitioning = false;
   posthog.capture("flow_timer_started", { cycle: flow.cycle, phase: flow.isWork ? "work" : "break", active_mode: vibe.currentMode || null });
 
   timerInterval = setInterval(() => {
     flow.timeLeft--;
     updateDisplay();
 
-    if (flow.timeLeft <= 0) {
+    if (flow.timeLeft <= 0 && !isPhaseTransitioning) {
       nextPhase();
     }
   }, 1000);
 };
 
 async function nextPhase() {
+  if (isPhaseTransitioning) return;
+  isPhaseTransitioning = true;
   clearInterval(timerInterval);
 
   if (flow.isWork) {
@@ -749,6 +884,7 @@ async function nextPhase() {
     flow.timeLeft = flow.cycle % 4 === 0 ? 900 : 300;
 
     await onBreakStart();
+    await notifyPhaseChange("Focus done. Break started.");
 
   } else {
     // → back to work
@@ -758,15 +894,17 @@ async function nextPhase() {
     flow.timeLeft = 1500;
 
     await onWorkStart();
+    await notifyPhaseChange(`Break done. Focus cycle ${flow.cycle} started.`);
   }
 
   updateDisplay();
+  isPhaseTransitioning = false;
   startFlow();
 }
 
 async function onWorkStart() {
   await ensureAudioInitialized();
-  await vibe.play("deepFocus"); // or keep last selected mode
+  await vibe.play(preferredWorkMode);
   vibe.applyMood(currentMood);
   vibe.setIntensity(intensity);
   applyCurrentTimeContext();
@@ -782,14 +920,18 @@ async function onWorkStart() {
 }
 
 async function onBreakStart() {
-  await ensureAudioInitialized();
-  await vibe.play("deepSleep");
-  vibe.applyMood(currentMood);
-  vibe.setIntensity(intensity);
-  applyCurrentTimeContext();
+  if (timerSettings.pauseOnBreak) {
+    vibe.stop();
+  } else {
+    await ensureAudioInitialized();
+    await vibe.play("deepSleep");
+    vibe.applyMood(currentMood);
+    vibe.setIntensity(intensity);
+    applyCurrentTimeContext();
 
-  if (lastWeatherType) {
-    vibe.applyWeatherContext(lastWeatherType);
+    if (lastWeatherType) {
+      vibe.applyWeatherContext(lastWeatherType);
+    }
   }
 
   createParticles(20);
@@ -800,6 +942,7 @@ async function onBreakStart() {
 
 window.resetFlow = () => {
   clearInterval(timerInterval);
+  isPhaseTransitioning = false;
 
   flow = {
     timeLeft: 1500,
@@ -809,6 +952,10 @@ window.resetFlow = () => {
   };
 
   updateDisplay();
+};
+
+window.skipPhase = () => {
+  nextPhase();
 };
 
 function notify(text) {
@@ -1162,5 +1309,6 @@ function renderPresets() {
 }
 
 initFeedbackTracking();
+initTimerSettingsUI();
 renderPresets();
 initCookieConsent();
